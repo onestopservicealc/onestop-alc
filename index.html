@@ -93,17 +93,12 @@
   .reveal{opacity:0;transform:translateY(24px);animation:reveal .75s cubic-bezier(.2,.7,.3,1) forwards}
   @keyframes reveal{to{opacity:1;transform:none}}
 
-  /* ---------- toolbar (search only) ---------- */
-  .toolbar{
-    display:flex;gap:14px;align-items:center;flex-wrap:wrap;
-    margin:0 0 24px;padding:14px;background:var(--white);
-    border-radius:var(--r-lg);box-shadow:var(--shadow-sm);
-  }
-  .search{flex:1;min-width:220px;position:relative;display:flex;align-items:center}
-  .search svg{position:absolute;left:20px;width:18px;height:18px;stroke:var(--muted)}
+  /* ---------- header search ---------- */
+  .search{flex:1;min-width:200px;max-width:460px;position:relative;display:flex;align-items:center}
+  .search svg{position:absolute;left:18px;width:17px;height:17px;stroke:var(--muted)}
   .search input{
     width:100%;background:var(--paper);border:2px solid transparent;color:var(--ink);
-    padding:15px 18px 15px 48px;font-family:'IBM Plex Sans Thai';font-size:15px;outline:none;
+    padding:12px 16px 12px 44px;font-family:'IBM Plex Sans Thai';font-size:15px;outline:none;
     border-radius:var(--r-pill);transition:border-color .25s, background .25s;
   }
   .search input:focus{border-color:var(--red);background:var(--white)}
@@ -206,6 +201,7 @@
     .viewer{padding:0}
     .viewer-panel{border-radius:0}
     .viewer-bar .vt span{display:none}
+    .search{width:100%;max-width:none;min-width:0;order:3}
     .status{gap:8px;width:100%;margin-left:0}
     .pill-stat{flex:1}
     header.bar{border-radius:var(--r-lg);margin-bottom:24px}
@@ -231,20 +227,16 @@
           <p>System Hub</p>
         </div>
       </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="m20 20-3-3" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="search" type="text" placeholder="ค้นหาระบบ...">
+      </div>
       <div class="status">
         <div class="pill-stat"><span class="k">ระบบทั้งหมด</span><span class="v" id="count">00</span></div>
         <div class="pill-stat"><span class="k">วันที่</span><span class="v" id="date">--</span></div>
         <div class="live"><span class="dot"></span><span id="clock">--:--:--</span></div>
       </div>
     </header>
-
-    <!-- TOOLBAR -->
-    <div class="toolbar reveal" style="animation-delay:.08s">
-      <div class="search">
-        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="m20 20-3-3" stroke-width="2" stroke-linecap="round"/></svg>
-        <input id="search" type="text" placeholder="ค้นหาระบบ...">
-      </div>
-    </div>
 
     <div class="chips reveal" id="chips" style="animation-delay:.14s"></div>
 
