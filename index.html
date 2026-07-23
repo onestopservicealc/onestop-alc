@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ศูนย์รวมระบบหน่วยงาน · SYSTEM HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f5f8;
+    --white:#ffffff;
+    --ink:#16161c;
+    --ink-soft:#54545f;
+    --muted:#9a9aa6;
+    --line:#ececef;
+    --red:#e8112d;
+    --red-soft:#ff3b52;
+    --red-tint:#ffe7ea;
+    --red-wash:#fff3f4;
+    --shadow-sm:0 4px 14px -6px rgba(22,22,28,.16);
+    --shadow-md:0 18px 40px -18px rgba(22,22,28,.28);
+    --shadow-red:0 20px 46px -18px rgba(232,17,45,.45);
+    --r-lg:30px;
+    --r-md:22px;
+    --r-sm:16px;
+    --r-pill:999px;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans Thai',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* ---------- ambient rounded blobs ---------- */
+  .blob{position:fixed;z-index:0;border-radius:50%;filter:blur(70px);pointer-events:none;opacity:.55}
+  .blob.a{width:520px;height:520px;top:-200px;right:-120px;
+    background:radial-gradient(circle,var(--red-tint),transparent 70%);
+    animation:float1 20s ease-in-out infinite;}
+  .blob.b{width:460px;height:460px;bottom:-180px;left:-120px;
+    background:radial-gradient(circle,#eef1ff,transparent 70%);
+    animation:float2 24s ease-in-out infinite;}
+  .blob.c{width:300px;height:300px;top:40%;left:60%;
+    background:radial-gradient(circle,var(--red-wash),transparent 70%);
+    animation:float1 28s ease-in-out infinite reverse;}
+  @keyframes float1{50%{transform:translate(-60px,50px) scale(1.12)}}
+  @keyframes float2{50%{transform:translate(70px,-50px) scale(1.1)}}
+
+  .shell{position:relative;z-index:2;max-width:1240px;margin:0 auto;padding:0 24px 80px}
+
+  /* ---------- top bar ---------- */
+  header.bar{
+    display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+    margin:22px 0 34px;padding:16px 26px;
+    background:rgba(255,255,255,.72);
+    backdrop-filter:blur(14px);
+    border:1px solid var(--white);
+    border-radius:var(--r-pill);
+    box-shadow:var(--shadow-sm);
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .emblem{
+    width:48px;height:48px;flex:none;position:relative;
+    background:var(--red);border-radius:16px;
+    display:grid;place-items:center;
+    box-shadow:var(--shadow-red);
+    animation:emblemPulse 3.5s ease-in-out infinite;
+  }
+  .emblem span{font-family:'Kanit';font-weight:800;font-size:22px;color:#fff}
+  @keyframes emblemPulse{50%{transform:translateY(-3px) rotate(-4deg);border-radius:22px}}
+  .brand-txt h1{font-family:'Kanit';font-weight:700;font-size:19px;letter-spacing:.3px;line-height:1.1}
+  .brand-txt p{font-family:'Space Mono';font-size:11px;letter-spacing:3px;color:var(--red);text-transform:uppercase}
+
+  .status{margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .pill-stat{display:flex;flex-direction:column;line-height:1.25;
+    background:var(--paper);border-radius:var(--r-pill);padding:8px 18px}
+  .pill-stat .k{font-family:'Space Mono';color:var(--muted);font-size:9px;letter-spacing:2px}
+  .pill-stat .v{font-family:'Space Mono';color:var(--ink);font-size:14px;letter-spacing:1px}
+  .live{display:flex;align-items:center;gap:9px;background:var(--ink);color:#fff;
+    border-radius:var(--r-pill);padding:10px 18px;font-family:'Space Mono';font-size:13px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--red-soft);
+    animation:ping 1.8s ease-out infinite}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(255,59,82,.7)}70%{box-shadow:0 0 0 9px rgba(255,59,82,0)}100%{box-shadow:0 0 0 0 rgba(255,59,82,0)}}
+
+  /* reveal helper */
+  .reveal{opacity:0;transform:translateY(24px);animation:reveal .75s cubic-bezier(.2,.7,.3,1) forwards}
+  @keyframes reveal{to{opacity:1;transform:none}}
+
+  /* ---------- toolbar (search only) ---------- */
+  .toolbar{
+    display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+    margin:0 0 24px;padding:14px;background:var(--white);
+    border-radius:var(--r-lg);box-shadow:var(--shadow-sm);
+  }
+  .search{flex:1;min-width:220px;position:relative;display:flex;align-items:center}
+  .search svg{position:absolute;left:20px;width:18px;height:18px;stroke:var(--muted)}
+  .search input{
+    width:100%;background:var(--paper);border:2px solid transparent;color:var(--ink);
+    padding:15px 18px 15px 48px;font-family:'IBM Plex Sans Thai';font-size:15px;outline:none;
+    border-radius:var(--r-pill);transition:border-color .25s, background .25s;
+  }
+  .search input:focus{border-color:var(--red);background:var(--white)}
+  .search input::placeholder{color:var(--muted)}
+
+  /* ---------- filter chips ---------- */
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px;padding:0 4px}
+  .chip{
+    font-family:'IBM Plex Sans Thai';font-size:14px;color:var(--ink-soft);
+    background:var(--white);border:2px solid transparent;padding:9px 20px;cursor:pointer;
+    transition:all .22s;border-radius:var(--r-pill);box-shadow:var(--shadow-sm);
+  }
+  .chip:hover{color:var(--ink);transform:translateY(-2px)}
+  .chip.on{background:var(--ink);color:#fff}
+
+  /* ---------- grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:20px}
+  .card{
+    position:relative;background:var(--white);border-radius:var(--r-lg);
+    padding:26px 24px 20px;cursor:pointer;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;gap:14px;overflow:hidden;
+    box-shadow:var(--shadow-sm);
+    transition:transform .3s cubic-bezier(.2,.7,.3,1), box-shadow .3s;
+    opacity:0;transform:translateY(26px);
+  }
+  .card.in{opacity:1;transform:none}
+  .card:hover{transform:translateY(-8px);box-shadow:var(--shadow-md)}
+  .card::before{ /* soft red wash that grows from corner */
+    content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;
+    background:var(--red-wash);border-radius:50%;transform:scale(0);transition:transform .45s ease;z-index:0}
+  .card:hover::before{transform:scale(2.6)}
+  .card > *{position:relative;z-index:1}
+
+  .card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .icon{
+    width:58px;height:58px;flex:none;display:grid;place-items:center;font-size:28px;
+    background:var(--paper);border-radius:20px;
+    transition:border-radius .35s, transform .35s, background .35s;
+  }
+  .card:hover .icon{border-radius:50%;transform:scale(1.08) rotate(-6deg);background:var(--red-tint)}
+  .cat-tag{font-family:'IBM Plex Sans Thai';font-size:11px;font-weight:600;letter-spacing:.5px;
+    color:var(--red);background:var(--red-wash);padding:6px 14px;border-radius:var(--r-pill)}
+  .card h3{font-family:'Kanit';font-weight:600;font-size:19px;line-height:1.3;letter-spacing:.2px}
+  .card p{color:var(--ink-soft);font-size:13.5px;line-height:1.65;flex:1}
+  .card-foot{display:flex;align-items:center;justify-content:flex-end;
+    padding-top:14px;border-top:1px solid var(--line)}
+  .go{display:flex;align-items:center;gap:7px;color:var(--ink);font-family:'Kanit';font-weight:600;
+    font-size:14px;letter-spacing:.3px;transition:gap .25s,color .25s}
+  .card:hover .go{gap:12px;color:var(--red)}
+  .go svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.2}
+
+  .empty{grid-column:1/-1;text-align:center;padding:70px 24px;color:var(--muted);
+    background:var(--white);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);font-family:'Kanit'}
+  .empty b{display:block;color:var(--ink-soft);font-size:19px;margin-bottom:6px;font-weight:600}
+
+  footer{margin-top:60px;padding:22px 26px;background:var(--white);border-radius:var(--r-pill);
+    box-shadow:var(--shadow-sm);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    font-family:'Space Mono';font-size:11px;letter-spacing:1px;color:var(--muted)}
+  footer .r{color:var(--red)}
+
+  @media (max-width:560px){
+    .status{gap:8px;width:100%;margin-left:0}
+    .pill-stat{flex:1}
+    header.bar{border-radius:var(--r-lg);margin-bottom:24px}
+    footer{flex-direction:column;border-radius:var(--r-lg)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.05s!important}
+  }
+</style>
+</head>
+<body>
+  <div class="blob a"></div>
+  <div class="blob b"></div>
+  <div class="blob c"></div>
+
+  <div class="shell">
+    <!-- TOP BAR -->
+    <header class="bar reveal">
+      <div class="brand">
+        <div class="emblem"><span>H</span></div>
+        <div class="brand-txt">
+          <h1>ศูนย์รวมระบบหน่วยงาน</h1>
+          <p>System Hub</p>
+        </div>
+      </div>
+      <div class="status">
+        <div class="pill-stat"><span class="k">ระบบทั้งหมด</span><span class="v" id="count">00</span></div>
+        <div class="pill-stat"><span class="k">วันที่</span><span class="v" id="date">--</span></div>
+        <div class="live"><span class="dot"></span><span id="clock">--:--:--</span></div>
+      </div>
+    </header>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar reveal" style="animation-delay:.08s">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="m20 20-3-3" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="search" type="text" placeholder="ค้นหาระบบ...">
+      </div>
+    </div>
+
+    <div class="chips reveal" id="chips" style="animation-delay:.14s"></div>
+
+    <!-- GRID -->
+    <main class="grid" id="grid"></main>
+
+    <footer class="reveal" style="animation-delay:.2s">
+      <span>© ศูนย์รวมระบบหน่วยงาน · จัดทำเพื่อการใช้งานภายใน</span>
+      <span>STATUS <span class="r">● ONLINE</span> · v1.2</span>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     ★★★ แก้ไขรายการระบบทั้งหมดได้ที่นี่ (จัดการจากโค้ดเท่านั้น) ★★★
+     - เพิ่มระบบ: เพิ่มบรรทัดใหม่ตามรูปแบบด้านล่าง
+     - แก้ไข: เปลี่ยนข้อความในบรรทัดที่ต้องการ
+     - ลบ: ลบทั้งบรรทัดของระบบนั้นออก
+     รูปแบบแต่ละรายการ: {name:"ชื่อ", url:"ลิงก์", desc:"คำอธิบาย", cat:"หมวดหมู่", icon:"ไอคอน"}
+     ========================================================= */
+  var SYSTEMS = [
+    {name:"ระบบสารบรรณอิเล็กทรอนิกส์", url:"#", desc:"รับ-ส่งและติดตามหนังสือราชการภายในและภายนอก", cat:"งานสารบรรณ", icon:"📄"},
+    {name:"ระบบบริหารงานบุคคล", url:"#", desc:"ข้อมูลบุคลากร โครงสร้าง และประวัติการทำงาน", cat:"บุคคล", icon:"👥"},
+    {name:"ระบบลาออนไลน์", url:"#", desc:"ยื่นใบลา อนุมัติ และตรวจสอบวันลาคงเหลือ", cat:"บุคคล", icon:"🗓️"},
+    {name:"ระบบการเงินและบัญชี", url:"#", desc:"เบิกจ่าย งบประมาณ และรายงานทางการเงิน", cat:"การเงิน", icon:"💰"},
+    {name:"ระบบจองห้องประชุม", url:"#", desc:"ตรวจสอบและจองห้องประชุมพร้อมอุปกรณ์", cat:"ทั่วไป", icon:"📅"},
+    {name:"ระบบแจ้งซ่อม IT", url:"#", desc:"แจ้งปัญหาอุปกรณ์และติดตามสถานะการซ่อม", cat:"ไอที", icon:"🛠️"},
+    {name:"อีเมลองค์กร", url:"#", desc:"เข้าใช้งานอีเมลและปฏิทินขององค์กร", cat:"ไอที", icon:"✉️"},
+    {name:"ระบบเบิกจ่ายพัสดุ", url:"#", desc:"ขอเบิกวัสดุ ครุภัณฑ์ และติดตามคำขอ", cat:"การเงิน", icon:"📦"}
+    /* ↓ เพิ่มระบบใหม่ต่อจากบรรทัดนี้ได้เลย (อย่าลืมใส่ , ปิดท้ายบรรทัดก่อนหน้า)
+    ,{name:"ชื่อระบบใหม่", url:"https://example.com", desc:"คำอธิบาย", cat:"หมวดหมู่", icon:"🌐"}
+    */
+  ];
+
+  var activeCat = "ทั้งหมด";
+  var query = "";
+
+  var grid = document.getElementById("grid");
+  var chipsEl = document.getElementById("chips");
+
+  function cats(){
+    var set = {}; SYSTEMS.forEach(function(s){ if(s.cat) set[s.cat]=true; });
+    return ["ทั้งหมด"].concat(Object.keys(set));
+  }
+  function renderChips(){
+    chipsEl.innerHTML = "";
+    cats().forEach(function(c){
+      var b = document.createElement("button");
+      b.className = "chip" + (c===activeCat ? " on":"");
+      b.textContent = c;
+      b.onclick = function(){ activeCat=c; renderChips(); renderGrid(); };
+      chipsEl.appendChild(b);
+    });
+  }
+  function matches(s){
+    var okCat = activeCat==="ทั้งหมด" || s.cat===activeCat;
+    var q = query.trim().toLowerCase();
+    var okQ = !q || (s.name+" "+(s.desc||"")+" "+(s.cat||"")).toLowerCase().indexOf(q)>-1;
+    return okCat && okQ;
+  }
+  function renderGrid(){
+    grid.innerHTML = "";
+    var list = SYSTEMS.filter(matches);
+    document.getElementById("count").textContent = String(SYSTEMS.length).padStart(2,"0");
+    if(list.length===0){
+      var e = document.createElement("div");
+      e.className = "empty";
+      e.innerHTML = "<b>ไม่พบระบบที่ตรงกับการค้นหา</b>ลองเปลี่ยนคำค้นหรือเลือกหมวดหมู่อื่น";
+      grid.appendChild(e); return;
+    }
+    list.forEach(function(s, n){
+      var a = document.createElement("a");
+      a.className = "card"; a.href = s.url || "#";
+      if(s.url && s.url!=="#"){ a.target="_blank"; a.rel="noopener"; }
+      a.innerHTML =
+        '<div class="card-top">'+
+          '<div class="icon">'+(s.icon||"🌐")+'</div>'+
+          (s.cat?'<span class="cat-tag">'+esc(s.cat)+'</span>':'')+
+        '</div>'+
+        '<h3>'+esc(s.name)+'</h3>'+
+        '<p>'+esc(s.desc||"")+'</p>'+
+        '<div class="card-foot">'+
+          '<span class="go">เข้าระบบ <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'+
+        '</div>';
+      if(!s.url || s.url==="#"){ a.onclick = function(ev){ ev.preventDefault(); }; }
+      grid.appendChild(a);
+      setTimeout(function(){ a.classList.add("in"); }, 45*n);
+    });
+  }
+  function esc(t){var d=document.createElement("div");d.textContent=t==null?"":t;return d.innerHTML;}
+
+  document.getElementById("search").addEventListener("input", function(e){ query = e.target.value; renderGrid(); });
+
+  var months=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  function tick(){
+    var d=new Date(); var p=function(n){return String(n).padStart(2,"0");};
+    document.getElementById("clock").textContent = p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+    document.getElementById("date").textContent = d.getDate()+" "+months[d.getMonth()]+" "+((d.getFullYear()+543)%100);
+  }
+  renderChips(); renderGrid(); tick(); setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
