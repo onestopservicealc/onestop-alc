@@ -2,11 +2,18 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ศูนย์รวมระบบสำนักงานคณะกรรมการควบคุมเครื่องดื่มแอลกอฮอล์</title>
+<meta name="theme-color" content="#e8112d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" href="./icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.lordicon.com/lordicon.js" defer></script>
 <style>
   :root{
     --paper:#f4f5f8;
@@ -22,14 +29,14 @@
     --shadow-sm:0 4px 14px -6px rgba(22,22,28,.16);
     --shadow-md:0 18px 40px -18px rgba(22,22,28,.28);
     --shadow-red:0 20px 46px -18px rgba(232,17,45,.45);
-    --r-lg:30px;
-    --r-md:22px;
-    --r-sm:16px;
+    --gutter:clamp(12px,3.5vw,24px);
+    --r-card:clamp(22px,5vw,30px);
     --r-pill:999px;
   }
 
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth}
+  [hidden]{display:none!important}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   body{
     background:var(--paper);
     color:var(--ink);
@@ -37,176 +44,214 @@
     min-height:100vh;
     overflow-x:hidden;
     position:relative;
+    -webkit-tap-highlight-color:rgba(232,17,45,.12);
   }
+  a{color:var(--red);text-decoration:none}
 
   /* ---------- ambient rounded blobs ---------- */
   .blob{position:fixed;z-index:0;border-radius:50%;filter:blur(70px);pointer-events:none;opacity:.55}
-  .blob.a{width:520px;height:520px;top:-200px;right:-120px;
+  .blob.a{width:min(520px,120vw);height:min(520px,120vw);top:-200px;right:-120px;
     background:radial-gradient(circle,var(--red-tint),transparent 70%);
-    animation:float1 20s ease-in-out infinite;}
-  .blob.b{width:460px;height:460px;bottom:-180px;left:-120px;
+    animation:float1 20s ease-in-out infinite}
+  .blob.b{width:min(460px,110vw);height:min(460px,110vw);bottom:-180px;left:-120px;
     background:radial-gradient(circle,#eef1ff,transparent 70%);
-    animation:float2 24s ease-in-out infinite;}
-  .blob.c{width:300px;height:300px;top:40%;left:60%;
+    animation:float2 24s ease-in-out infinite}
+  .blob.c{width:min(300px,80vw);height:min(300px,80vw);top:40%;left:60%;
     background:radial-gradient(circle,var(--red-wash),transparent 70%);
-    animation:float1 28s ease-in-out infinite reverse;}
+    animation:float1 28s ease-in-out infinite reverse}
   @keyframes float1{50%{transform:translate(-60px,50px) scale(1.12)}}
   @keyframes float2{50%{transform:translate(70px,-50px) scale(1.1)}}
 
-  .shell{position:relative;z-index:2;max-width:1240px;margin:0 auto;padding:0 24px 80px}
+  .shell{
+    position:relative;z-index:2;max-width:1240px;margin:0 auto;
+    padding:0 var(--gutter) calc(clamp(40px,12vw,80px) + env(safe-area-inset-bottom));
+  }
 
-  /* ---------- top bar ---------- */
+  /* ---------- sticky top region (bar + chips) ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    margin:0 calc(-1 * var(--gutter));
+    padding:calc(env(safe-area-inset-top) + clamp(10px,2.5vw,22px)) var(--gutter) 12px;
+    background:rgba(244,245,248,.86);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+
   header.bar{
-    display:flex;align-items:center;gap:20px;flex-wrap:wrap;
-    margin:22px 0 34px;padding:16px 26px;
-    background:rgba(255,255,255,.72);
-    backdrop-filter:blur(14px);
+    display:flex;align-items:center;gap:clamp(10px,2vw,20px);flex-wrap:wrap;
+    padding:clamp(10px,2vw,16px) clamp(14px,2.4vw,26px);
+    background:rgba(255,255,255,.78);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     border:1px solid var(--white);
-    border-radius:var(--r-pill);
+    border-radius:clamp(22px,6vw,999px);
     box-shadow:var(--shadow-sm);
+    animation:reveal .75s cubic-bezier(.2,.7,.3,1) both;
   }
-  .brand{display:flex;align-items:center;gap:14px}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0;flex:0 1 auto}
   .emblem{
-    width:48px;height:48px;flex:none;position:relative;
-    background:var(--red);border-radius:16px;
-    display:grid;place-items:center;
-    box-shadow:var(--shadow-red);
-    animation:emblemPulse 3.5s ease-in-out infinite;
+    width:clamp(42px,10.5vw,52px);height:clamp(42px,10.5vw,52px);flex:none;
+    border-radius:50%;background:var(--white);display:grid;place-items:center;overflow:hidden;
+    box-shadow:0 6px 18px -8px rgba(232,17,45,.5);
   }
-  .emblem span{font-family:'Kanit';font-weight:800;font-size:22px;color:#fff}
-  @keyframes emblemPulse{50%{transform:translateY(-3px) rotate(-4deg);border-radius:22px}}
-  .brand-txt h1{font-family:'Kanit';font-weight:700;font-size:19px;letter-spacing:.3px;line-height:1.1}
-  .brand-txt p{font-family:'Space Mono';font-size:11px;letter-spacing:3px;color:var(--red);text-transform:uppercase}
-
-  .status{margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .pill-stat{display:flex;flex-direction:column;line-height:1.25;
-    background:var(--paper);border-radius:var(--r-pill);padding:8px 18px}
-  .pill-stat .k{font-family:'Space Mono';color:var(--muted);font-size:9px;letter-spacing:2px}
-  .pill-stat .v{font-family:'Space Mono';color:var(--ink);font-size:14px;letter-spacing:1px}
-  .live{display:flex;align-items:center;gap:9px;background:var(--ink);color:#fff;
-    border-radius:var(--r-pill);padding:10px 18px;font-family:'Space Mono';font-size:13px}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--red-soft);
-    animation:ping 1.8s ease-out infinite}
-  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(255,59,82,.7)}70%{box-shadow:0 0 0 9px rgba(255,59,82,0)}100%{box-shadow:0 0 0 0 rgba(255,59,82,0)}}
-
-  /* reveal helper */
-  .reveal{opacity:0;transform:translateY(24px);animation:reveal .75s cubic-bezier(.2,.7,.3,1) forwards}
-  @keyframes reveal{to{opacity:1;transform:none}}
+  .emblem img{width:100%;height:100%;object-fit:contain;display:block;border-radius:50%}
+  .brand-txt{min-width:0}
+  .brand-txt h1{font-family:'Kanit',sans-serif;font-weight:700;font-size:clamp(16px,4.4vw,19px);
+    letter-spacing:.3px;line-height:1.15;white-space:nowrap}
+  .brand-txt p{font-family:'Space Mono',monospace;font-size:clamp(9px,2.4vw,11px);letter-spacing:3px;
+    color:var(--red);text-transform:uppercase;white-space:nowrap}
 
   /* ---------- header search ---------- */
-  .search{flex:1;min-width:200px;max-width:460px;position:relative;display:flex;align-items:center}
-  .search svg{position:absolute;left:18px;width:17px;height:17px;stroke:var(--muted)}
+  .search{flex:1 1 240px;min-width:0;position:relative;display:flex;align-items:center;order:3}
+  .search svg{position:absolute;left:17px;width:17px;height:17px;stroke:var(--muted);pointer-events:none}
   .search input{
-    width:100%;background:var(--paper);border:2px solid transparent;color:var(--ink);
-    padding:12px 16px 12px 44px;font-family:'IBM Plex Sans Thai';font-size:15px;outline:none;
-    border-radius:var(--r-pill);transition:border-color .25s, background .25s;
+    width:100%;height:48px;background:var(--paper);border:2px solid transparent;color:var(--ink);
+    padding:0 16px 0 44px;font-family:'IBM Plex Sans Thai',sans-serif;font-size:16px;outline:none;
+    border-radius:var(--r-pill);transition:border-color .25s,background .25s;-webkit-appearance:none;
   }
   .search input:focus{border-color:var(--red);background:var(--white)}
   .search input::placeholder{color:var(--muted)}
+  .search input::-webkit-search-cancel-button{-webkit-appearance:none}
 
-  /* ---------- filter chips ---------- */
-  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px;padding:0 4px}
-  .chip{
-    font-family:'IBM Plex Sans Thai';font-size:14px;color:var(--ink-soft);
-    background:var(--white);border:2px solid transparent;padding:9px 20px;cursor:pointer;
-    transition:all .22s;border-radius:var(--r-pill);box-shadow:var(--shadow-sm);
+  /* ---------- compact meta (count · date · clock) ---------- */
+  .meta{margin-left:auto;display:flex;align-items:center;gap:10px;flex:0 0 auto;
+    font-family:'Space Mono',monospace;font-size:12px;letter-spacing:1px;color:var(--muted);white-space:nowrap}
+  .meta .count{color:var(--ink)}
+  .meta .sep{color:var(--line)}
+  .meta .date{color:var(--ink-soft)}
+  .live{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;
+    border-radius:var(--r-pill);padding:7px 14px;font-size:12.5px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--red-soft);animation:ping 1.8s ease-out infinite}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(255,59,82,.7)}70%{box-shadow:0 0 0 9px rgba(255,59,82,0)}100%{box-shadow:0 0 0 0 rgba(255,59,82,0)}}
+
+  /* ---------- filter chips (horizontal scroll on mobile) ---------- */
+  .chips{
+    display:flex;gap:9px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+    padding:14px var(--gutter) 4px;margin:0 calc(-1 * var(--gutter));
+    scrollbar-width:none;-ms-overflow-style:none;
   }
-  .chip:hover{color:var(--ink);transform:translateY(-2px)}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:none;font-family:'IBM Plex Sans Thai',sans-serif;font-size:14.5px;font-weight:500;
+    color:var(--ink-soft);background:var(--white);border:2px solid transparent;
+    padding:0 20px;height:42px;cursor:pointer;transition:all .22s;
+    border-radius:var(--r-pill);box-shadow:var(--shadow-sm);white-space:nowrap;
+  }
+  .chip:hover{transform:translateY(-2px)}
   .chip.on{background:var(--ink);color:#fff}
 
+  /* ---------- install banner (PWA) ---------- */
+  .install{
+    display:flex;align-items:center;gap:14px;margin:6px 0 16px;padding:14px 18px;
+    background:var(--ink);color:#fff;border-radius:22px;box-shadow:var(--shadow-md);
+  }
+  .install .mark{width:40px;height:40px;flex:none;border-radius:50%;background:var(--white);
+    display:grid;place-items:center;overflow:hidden}
+  .install .mark img{width:100%;height:100%;object-fit:contain;display:block;border-radius:50%}
+  .install .txt{flex:1;min-width:0}
+  .install .txt b{display:block;font-family:'Kanit',sans-serif;font-weight:600;font-size:15px}
+  .install .txt span{font-size:12.5px;color:var(--muted)}
+  .install .yes{flex:none;height:44px;padding:0 20px;border:none;cursor:pointer;
+    background:#fff;color:var(--ink);border-radius:var(--r-pill);
+    font-family:'Kanit',sans-serif;font-weight:600;font-size:14px;transition:background .2s,color .2s}
+  .install .yes:hover{background:var(--red-tint);color:var(--red)}
+  .install .no{flex:none;width:44px;height:44px;border:none;cursor:pointer;background:transparent;
+    color:var(--muted);border-radius:var(--r-pill);font-size:20px;line-height:1;transition:color .2s}
+  .install .no:hover{color:#fff}
+
   /* ---------- grid ---------- */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,304px),1fr));gap:clamp(12px,2.6vw,20px)}
   .card{
-    position:relative;background:var(--white);border-radius:var(--r-lg);
-    padding:26px 24px 20px;cursor:pointer;text-decoration:none;color:inherit;
-    display:flex;flex-direction:column;gap:14px;overflow:hidden;
+    position:relative;background:var(--white);border-radius:var(--r-card);
+    padding:clamp(18px,4vw,24px);cursor:pointer;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;gap:12px;overflow:hidden;
     box-shadow:var(--shadow-sm);
-    transition:transform .3s cubic-bezier(.2,.7,.3,1), box-shadow .3s;
-    opacity:0;transform:translateY(26px);
+    transition:transform .3s cubic-bezier(.2,.7,.3,1),box-shadow .3s;
+    animation:cardIn .55s cubic-bezier(.2,.7,.3,1) both;
   }
-  .card.in{opacity:1;transform:none}
-  .card:hover{transform:translateY(-8px);box-shadow:var(--shadow-md)}
-  .card::before{ /* soft red wash that grows from corner */
-    content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;
-    background:var(--red-wash);border-radius:50%;transform:scale(0);transition:transform .45s ease;z-index:0}
-  .card:hover::before{transform:scale(2.6)}
-  .card > *{position:relative;z-index:1}
+  .card:hover{transform:translateY(-6px);box-shadow:var(--shadow-md)}
+  .card:active{transform:scale(.985)}
+  @keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 
-  .card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .icon{
-    width:58px;height:58px;flex:none;display:grid;place-items:center;font-size:28px;
-    background:var(--paper);border-radius:20px;
-    transition:border-radius .35s, transform .35s, background .35s;
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .icon{position:relative;width:clamp(58px,15vw,68px);height:clamp(58px,15vw,68px);flex:none}
+  .icon img{width:100%;height:100%;object-fit:contain;display:block}
+  .icon lord-icon{width:100%;height:100%;display:block}
+  /* ไอคอนขยับเฉพาะตอนชี้/โฟกัสที่การ์ด (ไม่ขยับตลอดเวลา) */
+  .card:hover .icon img,
+  .card:focus-visible .icon img{will-change:transform;animation:iconBob 5.2s ease-in-out infinite}
+  @keyframes iconBob{
+    0%,100%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+    22%{transform:translate3d(0,-4px,0) rotate(-3.5deg) scale(1.03)}
+    55%{transform:translate3d(0,2.5px,0) rotate(2.5deg) scale(.985)}
+    78%{transform:translate3d(0,-1px,0) rotate(-1deg) scale(1.01)}
   }
-  .card:hover .icon{border-radius:50%;transform:scale(1.08) rotate(-6deg);background:var(--red-tint)}
-  .cat-tag{font-family:'IBM Plex Sans Thai';font-size:11px;font-weight:600;letter-spacing:.5px;
-    color:var(--red);background:var(--red-wash);padding:6px 14px;border-radius:var(--r-pill)}
-  .card h3{font-family:'Kanit';font-weight:600;font-size:19px;line-height:1.3;letter-spacing:.2px}
-  .card p{color:var(--ink-soft);font-size:13.5px;line-height:1.65;flex:1}
-  .card-foot{display:flex;align-items:center;justify-content:flex-end;
-    padding-top:14px;border-top:1px solid var(--line)}
-  .go{display:flex;align-items:center;gap:7px;color:var(--ink);font-family:'Kanit';font-weight:600;
-    font-size:14px;letter-spacing:.3px;transition:gap .25s,color .25s}
-  .card:hover .go{gap:12px;color:var(--red)}
-  .go svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.2}
 
-  .empty{grid-column:1/-1;text-align:center;padding:70px 24px;color:var(--muted);
-    background:var(--white);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);font-family:'Kanit'}
+  .tags{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .cat-tag{font-size:11.5px;font-weight:600;letter-spacing:.5px;color:var(--red);
+    background:var(--red-wash);padding:6px 13px;border-radius:var(--r-pill);white-space:nowrap}
+  .internal{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;
+    font-size:10px;letter-spacing:.6px;color:var(--ink-soft);background:var(--paper);
+    border:1px solid var(--line);padding:5px 11px;border-radius:var(--r-pill);white-space:nowrap}
+  .internal i{width:6px;height:6px;border-radius:50%;background:var(--muted);flex:none}
+
+  .card h3{font-family:'Kanit',sans-serif;font-weight:600;font-size:clamp(18px,4.6vw,20px);
+    line-height:1.3;letter-spacing:.2px;text-wrap:pretty}
+  .card p{color:var(--ink-soft);font-size:14px;line-height:1.65;flex:1;text-wrap:pretty}
+  .card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    min-height:48px;padding-top:12px;border-top:1px solid var(--line)}
+  .open-label{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.8px;color:var(--muted)}
+  .go{display:flex;align-items:center;gap:8px;color:var(--red);font-family:'Kanit',sans-serif;
+    font-weight:600;font-size:15px;letter-spacing:.3px}
+  .go svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.2;fill:none}
+
+  .empty{grid-column:1/-1;text-align:center;padding:clamp(44px,12vw,70px) 24px;color:var(--muted);
+    background:var(--white);border-radius:var(--r-card);box-shadow:var(--shadow-sm);font-family:'Kanit',sans-serif}
   .empty b{display:block;color:var(--ink-soft);font-size:19px;margin-bottom:6px;font-weight:600}
 
-  footer{margin-top:60px;padding:22px 26px;background:var(--white);border-radius:var(--r-pill);
-    box-shadow:var(--shadow-sm);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
-    font-family:'Space Mono';font-size:11px;letter-spacing:1px;color:var(--muted)}
+  footer{
+    margin-top:clamp(32px,8vw,60px);padding:18px clamp(18px,3vw,26px);
+    background:var(--white);border-radius:clamp(20px,5vw,999px);box-shadow:var(--shadow-sm);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--muted);
+  }
   footer .r{color:var(--red)}
 
-  /* ---------- embed viewer (iframe modal) ---------- */
+  /* ---------- embed viewer (iframe sheet) ---------- */
   .viewer{
-    position:fixed;inset:0;z-index:50;display:none;
-    padding:18px;
-    background:rgba(22,22,28,.55);backdrop-filter:blur(6px);
+    position:fixed;inset:0;z-index:50;display:none;padding:clamp(0px,2vw,18px);
+    background:rgba(22,22,28,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
   }
   .viewer.open{display:flex}
   .viewer-panel{
     margin:auto;width:100%;max-width:1400px;height:100%;
-    background:var(--white);border-radius:var(--r-lg);overflow:hidden;
+    background:var(--white);border-radius:clamp(0px,3vw,30px);overflow:hidden;
     display:flex;flex-direction:column;box-shadow:var(--shadow-md);
-    animation:reveal .4s cubic-bezier(.2,.7,.3,1);
+    animation:sheetUp .4s cubic-bezier(.2,.7,.3,1) both;
   }
-  .viewer-bar{
-    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-    padding:14px 20px;border-bottom:1px solid var(--line);
-  }
-  .viewer-bar .vi{width:40px;height:40px;flex:none;display:grid;place-items:center;
-    font-size:20px;background:var(--paper);border-radius:14px}
-  .viewer-bar .vt{line-height:1.2}
-  .viewer-bar .vt b{font-family:'Kanit';font-weight:600;font-size:17px}
-  .viewer-bar .vt span{font-family:'Space Mono';font-size:10px;letter-spacing:1px;color:var(--muted)}
-  .viewer-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
-  .v-btn{
-    display:flex;align-items:center;gap:7px;cursor:pointer;text-decoration:none;
-    font-family:'Kanit';font-weight:600;font-size:13.5px;color:var(--ink);
-    background:var(--paper);border:none;padding:10px 16px;border-radius:var(--r-pill);
-    transition:background .2s,color .2s;
-  }
-  .v-btn:hover{background:var(--red-wash);color:var(--red)}
-  .v-btn svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.2;fill:none}
-  .v-close{background:var(--ink);color:#fff}
-  .v-close:hover{background:var(--red);color:#fff}
+  @keyframes sheetUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+  .viewer-bar{display:flex;align-items:center;gap:12px;
+    padding:calc(env(safe-area-inset-top) + 12px) 14px 12px;border-bottom:1px solid var(--line)}
+  .viewer-bar .vi{width:42px;height:42px;flex:none;display:grid;place-items:center}
+  .viewer-bar .vi img{width:100%;height:100%;object-fit:contain;display:block}
+  .viewer-bar .vt{line-height:1.25;min-width:0;flex:1}
+  .viewer-bar .vt b{display:block;font-family:'Kanit',sans-serif;font-weight:600;font-size:16px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .viewer-bar .vt span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;
+    color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .icon-btn{flex:none;display:grid;place-items:center;width:46px;height:46px;padding:0;border:none;
+    cursor:pointer;text-decoration:none;color:var(--ink);background:var(--paper);
+    border-radius:var(--r-pill);transition:background .2s,color .2s}
+  .icon-btn:hover{background:var(--red-wash);color:var(--red)}
+  .icon-btn svg{width:17px;height:17px;stroke:currentColor;stroke-width:2.2;fill:none}
+  .icon-btn.close{color:#fff;background:var(--ink)}
+  .icon-btn.close:hover{background:var(--red);color:#fff}
   .viewer-frame{flex:1;position:relative;background:var(--paper)}
   .viewer-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .viewer-load{position:absolute;inset:0;display:grid;place-items:center;
-    font-family:'Space Mono';font-size:12px;letter-spacing:2px;color:var(--muted)}
+    font-family:'Space Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--muted)}
 
-  @media (max-width:560px){
-    .viewer{padding:0}
-    .viewer-panel{border-radius:0}
-    .viewer-bar .vt span{display:none}
-    .search{width:100%;max-width:none;min-width:0;order:3}
-    .status{gap:8px;width:100%;margin-left:0}
-    .pill-stat{flex:1}
-    header.bar{border-radius:var(--r-lg);margin-bottom:24px}
-    footer{flex-direction:column;border-radius:var(--r-lg)}
-  }
+  @keyframes reveal{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+  .reveal{animation:reveal .75s cubic-bezier(.2,.7,.3,1) both}
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.05s!important}
   }
@@ -218,34 +263,50 @@
   <div class="blob c"></div>
 
   <div class="shell">
-    <!-- TOP BAR -->
-    <header class="bar reveal">
-      <div class="brand">
-        <div class="emblem"><span>H</span></div>
-        <div class="brand-txt">
-          <h1>ศูนย์รวมระบบ</h1>
-          <p> System Hub</p>
+    <!-- STICKY TOP: bar + chips -->
+    <div class="topbar">
+      <header class="bar">
+        <div class="brand">
+          <div class="emblem"><img src="./icons/logo.png" alt="ตราสำนักงานคณะกรรมการควบคุมเครื่องดื่มแอลกอฮอล์ กรมควบคุมโรค" width="52" height="52"></div>
+          <div class="brand-txt">
+            <h1>ศูนย์รวมระบบ</h1>
+            <p>System Hub</p>
+          </div>
         </div>
-      </div>
-      <div class="search">
-        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="m20 20-3-3" stroke-width="2" stroke-linecap="round"/></svg>
-        <input id="search" type="text" placeholder="ค้นหาระบบ...">
-      </div>
-      <div class="status">
-        <div class="pill-stat"><span class="k">ระบบทั้งหมด</span><span class="v" id="count">00</span></div>
-        <div class="pill-stat"><span class="k">วันที่</span><span class="v" id="date">--</span></div>
-        <div class="live"><span class="dot"></span><span id="clock">--:--:--</span></div>
-      </div>
-    </header>
 
-    <div class="chips reveal" id="chips" style="animation-delay:.14s"></div>
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="m20 20-3-3" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="search" type="search" inputmode="search" enterkeyhint="search" placeholder="ค้นหาระบบ..." aria-label="ค้นหาระบบ">
+        </label>
+
+        <div class="meta">
+          <span><span class="count" id="count">00</span> ระบบ</span>
+          <span class="sep">|</span>
+          <span class="date" id="date">--</span>
+          <span class="live" id="live"><span class="dot"></span><span id="clock">--:--:--</span></span>
+        </div>
+      </header>
+
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <!-- PWA INSTALL BANNER -->
+    <div class="install" id="install" hidden>
+      <div class="mark"><img src="./icons/logo.png" alt="" width="40" height="40"></div>
+      <div class="txt">
+        <b>ติดตั้งเป็นแอปบนมือถือ</b>
+        <span>เปิดเต็มจอ ไม่ต้องพิมพ์ลิงก์ใหม่ทุกครั้ง</span>
+      </div>
+      <button class="yes" id="installYes" type="button">ติดตั้ง</button>
+      <button class="no" id="installNo" type="button" aria-label="ปิด">×</button>
+    </div>
 
     <!-- GRID -->
     <main class="grid" id="grid"></main>
 
     <footer class="reveal" style="animation-delay:.2s">
       <span>© ศูนย์รวมระบบหน่วยงาน · จัดทำเพื่อการใช้งานภายใน</span>
-      <span>STATUS <span class="r">● ONLINE</span> · v1.2</span>
+      <span>STATUS <span class="r">● ONLINE</span> · v2.0</span>
     </footer>
   </div>
 
@@ -253,18 +314,17 @@
   <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="viewer-panel">
       <div class="viewer-bar">
-        <div class="vi" id="vIcon">🌐</div>
-        <div class="vt"><b id="vName"></b><br><span id="vUrl"></span></div>
-        <div class="viewer-actions">
-          <a class="v-btn" id="vOpen" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            เปิดแท็บใหม่
-          </a>
-          <button class="v-btn v-close" id="vClose">
-            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
-            ปิด
-          </button>
+        <div class="vi" id="vIcon"></div>
+        <div class="vt">
+          <b id="vName"></b>
+          <span id="vUrl"></span>
         </div>
+        <a class="icon-btn" id="vOpen" href="#" target="_blank" rel="noopener" aria-label="เปิดแท็บใหม่" title="เปิดแท็บใหม่">
+          <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button class="icon-btn close" id="vClose" type="button" aria-label="ปิด" title="ปิด">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+        </button>
       </div>
       <div class="viewer-frame">
         <div class="viewer-load" id="vLoad">กำลังโหลด…</div>
@@ -278,97 +338,146 @@
   "use strict";
 
   /* =========================================================
+     ★★★ ตั้งค่าการทำงาน ★★★
+     OPEN_MODE      : "embed"  = เปิดระบบที่รองรับไว้ในหน้านี้
+                      "newtab" = บังคับให้ทุกระบบเปิดแท็บใหม่
+     SHOW_CLOCK     : true/false แสดงนาฬิกาบนแถบด้านบน
+     SHOW_INSTALL   : true/false แสดงแถบชวนติดตั้งเป็นแอป (PWA)
+     ========================================================= */
+  var OPEN_MODE    = "embed";
+  var SHOW_CLOCK   = true;
+  var SHOW_INSTALL = true;
+
+  /* ไอคอนดึงจาก Lordicon (ไฟล์ SVG นิ่ง แล้วขยับด้วย CSS เฉพาะตอนชี้ที่การ์ด)
+     ค่า icon คือชื่อไฟล์บน media.lordicon.com/icons/wired/lineal/
+     ถ้าต้องการไอคอนขยับจริงแบบ 60fps ให้ใส่ lottie:"https://cdn.lordicon.com/xxxxxxxx.json" เพิ่ม
+     (จะเล่นตอน hover เช่นกัน) วิธีเอาลิงก์: เปิดไอคอนบน lordicon.com -> "Embed HTML" -> คัดลอกค่า src */
+  var LI = "https://media.lordicon.com/icons/wired/lineal/";
+
+  /* =========================================================
      ★★★ แก้ไขรายการระบบทั้งหมดได้ที่นี่ (จัดการจากโค้ดเท่านั้น) ★★★
      - เพิ่มระบบ: เพิ่มบรรทัดใหม่ตามรูปแบบด้านล่าง
      - แก้ไข: เปลี่ยนข้อความในบรรทัดที่ต้องการ
      - ลบ: ลบทั้งบรรทัดของระบบนั้นออก
-     รูปแบบแต่ละรายการ: {name:"ชื่อ", url:"ลิงก์", desc:"คำอธิบาย", cat:"หมวดหมู่", icon:"ไอคอน"}
+     embed:true    = เปิดฝังในหน้านี้ | ไม่ใส่ = เปิดแท็บใหม่
+     internal:true = แสดงป้าย "เครือข่ายภายใน" (เข้าได้เฉพาะในเครือข่ายสำนักงาน
+                     และฝังในหน้านี้ไม่ได้เพราะเป็น http บนหน้า https)
      ========================================================= */
   var SYSTEMS = [
-    {name:"ปฏิทินสำนักงาน", url:"https://calendar-d.vercel.app/", desc:"ปฏิทินกิจกรรมและกำหนดการของสำนักงาน", cat:"ทั่วไป", icon:"📅", embed:true},
-    {name:"ระบบจองรถราชการ", url:"https://book-car-alc.vercel.app/", desc:"จองรถราชการ ตรวจสอบคิว และติดตามสถานะการจอง", cat:"ยานพาหนะ", icon:"🚗", embed:true},
-    {name:"ทะเบียนครุภัณฑ์คอมพิวเตอร์", url:"https://data-com-alc.vercel.app/", desc:"ทะเบียนและข้อมูลครุภัณฑ์คอมพิวเตอร์ของหน่วยงาน", cat:"ครุภัณฑ์", icon:"💻", embed:true},
-    /* 2 ระบบด้านล่างอยู่บนเครือข่ายภายใน (http://10.100.31.31) — เปิดแท็บใหม่
-       เพราะเมื่อ portal อยู่บน HTTPS จะฝัง HTTP ไม่ได้ (mixed-content ถูกบล็อก)
-       และเข้าถึงได้เฉพาะในเครือข่ายสำนักงานเท่านั้น */
-    {name:"ระบบยืม-คืนครุภัณฑ์", url:"http://10.100.31.31/eborrow/", desc:"ยืม-คืนครุภัณฑ์ และติดตามสถานะ (เครือข่ายภายใน)", cat:"ครุภัณฑ์", icon:"🔄"},
-    {name:"บัญชีรายการวัสดุคอมพิวเตอร์", url:"http://10.100.31.31/wadsadu-com/", desc:"บัญชีรายการวัสดุคอมพิวเตอร์ (เครือข่ายภายใน)", cat:"ครุภัณฑ์", icon:"🧾"},
-    {name:"ระบบขอสนับสนุนสื่อประชาสัมพันธ์", url:"https://media-alc.vercel.app", desc:"ขอสนับสนุนสื่อประชาสัมพันธ์ (กำลังพัฒนา)", cat:"ทั่วไป", icon:"📢", embed:true}
+    {name:"ปฏิทินสำนักงาน", url:"https://calendar-d.vercel.app/", desc:"ปฏิทินกิจกรรมและกำหนดการของสำนักงาน", cat:"ทั่วไป", icon:"28-calendar", embed:true},
+    {name:"ระบบจองรถราชการ", url:"https://book-car-alc.vercel.app/", desc:"จองรถราชการ ตรวจสอบคิว และติดตามสถานะการจอง", cat:"ยานพาหนะ", icon:"861-car-site-4", embed:true},
+    {name:"ทะเบียนครุภัณฑ์คอมพิวเตอร์", url:"https://data-com-alc.vercel.app/", desc:"ทะเบียนและข้อมูลครุภัณฑ์คอมพิวเตอร์ของหน่วยงาน", cat:"ครุภัณฑ์", icon:"748-notebook-laptop-ok-approved", embed:true},
+    {name:"ระบบยืม-คืนครุภัณฑ์", url:"http://10.100.31.31/eborrow/", desc:"ยืม-คืนครุภัณฑ์ และติดตามสถานะการยืม", cat:"ครุภัณฑ์", icon:"229-arrow-exchange", internal:true},
+    {name:"บัญชีรายการวัสดุคอมพิวเตอร์", url:"http://10.100.31.31/wadsadu-com/", desc:"บัญชีรายการวัสดุคอมพิวเตอร์คงเหลือและการเบิกจ่าย", cat:"ครุภัณฑ์", icon:"2450-invoice-general", internal:true},
+    {name:"ระบบขอสนับสนุนสื่อประชาสัมพันธ์", url:"https://media-alc.vercel.app", desc:"ขอสนับสนุนสื่อประชาสัมพันธ์ (กำลังพัฒนา)", cat:"ทั่วไป", icon:"2873-megaphone", embed:true}
     /* ↓ เพิ่มระบบใหม่ต่อจากบรรทัดนี้ได้เลย (อย่าลืมใส่ , ปิดท้ายบรรทัดก่อนหน้า)
-       embed:true = เปิดฝังในหน้านี้ | ไม่ใส่ embed = เปิดแท็บใหม่
-    ,{name:"ชื่อระบบใหม่", url:"https://example.com", desc:"คำอธิบาย", cat:"หมวดหมู่", icon:"🌐", embed:true}
+    ,{name:"ชื่อระบบใหม่", url:"https://example.com", desc:"คำอธิบาย", cat:"หมวดหมู่", icon:"28-calendar", embed:true}
     */
   ];
 
+  var MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+
   var activeCat = "ทั้งหมด";
   var query = "";
+  var installEvent = null;
 
-  var grid = document.getElementById("grid");
+  var grid    = document.getElementById("grid");
   var chipsEl = document.getElementById("chips");
 
+  function esc(t){ var d=document.createElement("div"); d.textContent = t==null?"":t; return d.innerHTML; }
+  function iconUrl(s){ return LI + s.icon + ".svg"; }
+  function isEmbed(s){ return !!s.embed && OPEN_MODE !== "newtab"; }
+
+  /* ---------- filter chips ---------- */
   function cats(){
-    var set = {}; SYSTEMS.forEach(function(s){ if(s.cat) set[s.cat]=true; });
-    return ["ทั้งหมด"].concat(Object.keys(set));
+    var out = ["ทั้งหมด"];
+    SYSTEMS.forEach(function(s){ if(s.cat && out.indexOf(s.cat) < 0) out.push(s.cat); });
+    return out;
   }
   function renderChips(){
     chipsEl.innerHTML = "";
     cats().forEach(function(c){
       var b = document.createElement("button");
-      b.className = "chip" + (c===activeCat ? " on":"");
+      b.type = "button";
+      b.className = "chip" + (c === activeCat ? " on" : "");
       b.textContent = c;
-      b.onclick = function(){ activeCat=c; renderChips(); renderGrid(); };
+      b.onclick = function(){ activeCat = c; renderChips(); renderGrid(); };
       chipsEl.appendChild(b);
     });
   }
+
+  /* ---------- grid ---------- */
   function matches(s){
-    var okCat = activeCat==="ทั้งหมด" || s.cat===activeCat;
+    var okCat = activeCat === "ทั้งหมด" || s.cat === activeCat;
     var q = query.trim().toLowerCase();
-    var okQ = !q || (s.name+" "+(s.desc||"")+" "+(s.cat||"")).toLowerCase().indexOf(q)>-1;
+    var okQ = !q || (s.name + " " + (s.desc||"") + " " + (s.cat||"")).toLowerCase().indexOf(q) > -1;
     return okCat && okQ;
+  }
+  function iconMarkup(s){
+    if(s.lottie){
+      return '<lord-icon src="' + esc(s.lottie) + '" trigger="loop-on-hover" delay="0" stroke="regular"' +
+             ' colors="primary:#16161c,secondary:#e8112d"></lord-icon>';
+    }
+    return '<img src="' + esc(iconUrl(s)) + '" alt="" width="52" height="52" loading="lazy" decoding="async">';
   }
   function renderGrid(){
     grid.innerHTML = "";
-    var list = SYSTEMS.filter(matches);
     document.getElementById("count").textContent = String(SYSTEMS.length).padStart(2,"0");
-    if(list.length===0){
+
+    var list = SYSTEMS.filter(matches);
+    if(list.length === 0){
       var e = document.createElement("div");
       e.className = "empty";
       e.innerHTML = "<b>ไม่พบระบบที่ตรงกับการค้นหา</b>ลองเปลี่ยนคำค้นหรือเลือกหมวดหมู่อื่น";
-      grid.appendChild(e); return;
+      grid.appendChild(e);
+      return;
     }
-    list.forEach(function(s, n){
+
+    list.forEach(function(s, i){
+      var embed = isEmbed(s);
       var a = document.createElement("a");
-      a.className = "card"; a.href = s.url || "#";
-      if(s.url && s.url!=="#" && !s.embed){ a.target="_blank"; a.rel="noopener"; }
+      a.className = "card";
+      a.href = s.url || "#";
+      a.style.animationDelay = (0.045 * i).toFixed(3) + "s";
+      if(!embed && s.url && s.url !== "#"){ a.target = "_blank"; a.rel = "noopener"; }
       a.innerHTML =
-        '<div class="card-top">'+
-          '<div class="icon">'+(s.icon||"🌐")+'</div>'+
-          (s.cat?'<span class="cat-tag">'+esc(s.cat)+'</span>':'')+
-        '</div>'+
-        '<h3>'+esc(s.name)+'</h3>'+
-        '<p>'+esc(s.desc||"")+'</p>'+
-        '<div class="card-foot">'+
-          '<span class="go">เข้าระบบ <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'+
+        '<div class="card-top">' +
+          '<div class="icon">' + iconMarkup(s) + '</div>' +
+          '<div class="tags">' +
+            (s.cat ? '<span class="cat-tag">' + esc(s.cat) + '</span>' : '') +
+            (s.internal ? '<span class="internal"><i></i>เครือข่ายภายใน</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<h3>' + esc(s.name) + '</h3>' +
+        '<p>' + esc(s.desc || "") + '</p>' +
+        '<div class="card-foot">' +
+          '<span class="open-label">' + (embed ? "เปิดในหน้านี้" : "เปิดแท็บใหม่") + '</span>' +
+          '<span class="go">เข้าระบบ <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
         '</div>';
-      if(!s.url || s.url==="#"){
+      if(!s.url || s.url === "#"){
         a.onclick = function(ev){ ev.preventDefault(); };
-      } else if(s.embed){
+      } else if(embed){
         a.onclick = function(ev){ ev.preventDefault(); openViewer(s); };
       }
       grid.appendChild(a);
-      setTimeout(function(){ a.classList.add("in"); }, 45*n);
     });
   }
-  function esc(t){var d=document.createElement("div");d.textContent=t==null?"":t;return d.innerHTML;}
 
-  document.getElementById("search").addEventListener("input", function(e){ query = e.target.value; renderGrid(); });
+  document.getElementById("search").addEventListener("input", function(e){
+    query = e.target.value; renderGrid();
+  });
 
-  var months=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  /* ---------- clock / date ---------- */
+  var live = document.getElementById("live");
+  if(!SHOW_CLOCK){ live.hidden = true; }
   function tick(){
-    var d=new Date(); var p=function(n){return String(n).padStart(2,"0");};
-    document.getElementById("clock").textContent = p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
-    document.getElementById("date").textContent = d.getDate()+" "+months[d.getMonth()]+" "+((d.getFullYear()+543)%100);
+    var d = new Date(), p = function(n){ return String(n).padStart(2,"0"); };
+    if(SHOW_CLOCK){
+      document.getElementById("clock").textContent = p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+    }
+    document.getElementById("date").textContent = d.getDate() + " " + MONTHS[d.getMonth()] + " " + ((d.getFullYear() + 543) % 100);
   }
+
   /* ---------- embed viewer ---------- */
   var viewer = document.getElementById("viewer");
   var vFrame = document.getElementById("vFrame");
@@ -377,7 +486,7 @@
   function openViewer(s){
     document.getElementById("vName").textContent = s.name;
     document.getElementById("vUrl").textContent  = s.url;
-    document.getElementById("vIcon").textContent = s.icon || "🌐";
+    document.getElementById("vIcon").innerHTML   = '<img src="' + esc(iconUrl(s)) + '" alt="" width="34" height="34">';
     document.getElementById("vOpen").href = s.url;
     vLoad.style.display = "grid";
     vFrame.src = s.url;
@@ -392,13 +501,33 @@
     vFrame.src = "about:blank";
   }
   vFrame.addEventListener("load", function(){
-    if(vFrame.src && vFrame.src.indexOf("about:blank")===-1) vLoad.style.display = "none";
+    if(vFrame.src && vFrame.src.indexOf("about:blank") === -1) vLoad.style.display = "none";
   });
   document.getElementById("vClose").addEventListener("click", closeViewer);
-  viewer.addEventListener("click", function(e){ if(e.target===viewer) closeViewer(); });
-  document.addEventListener("keydown", function(e){ if(e.key==="Escape" && viewer.classList.contains("open")) closeViewer(); });
+  viewer.addEventListener("click", function(e){ if(e.target === viewer) closeViewer(); });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && viewer.classList.contains("open")) closeViewer();
+  });
 
-  renderChips(); renderGrid(); tick(); setInterval(tick,1000);
+  /* ---------- PWA: install banner + service worker ---------- */
+  var installEl = document.getElementById("install");
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+    installEvent = e;
+    if(SHOW_INSTALL) installEl.hidden = false;
+  });
+  document.getElementById("installYes").addEventListener("click", function(){
+    if(!installEvent) return;
+    installEvent.prompt();
+    installEvent.userChoice.then(function(){ installEvent = null; installEl.hidden = true; });
+  });
+  document.getElementById("installNo").addEventListener("click", function(){ installEl.hidden = true; });
+
+  if("serviceWorker" in navigator && location.protocol === "https:"){
+    navigator.serviceWorker.register("./sw.js").catch(function(){});
+  }
+
+  renderChips(); renderGrid(); tick(); setInterval(tick, 1000);
 })();
 </script>
 </body>
