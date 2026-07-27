@@ -547,9 +547,19 @@
   });
   document.getElementById("installNo").addEventListener("click", function(){ installEl.hidden = true; });
 
-  if("serviceWorker" in navigator &&
-     (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")){
-    navigator.serviceWorker.register("./sw.js").catch(function(){});
+  if("serviceWorker" in navigator){
+    if(location.protocol === "https:"){
+      navigator.serviceWorker.register("./sw.js").catch(function(){});
+    } else {
+      /* ตอนทดสอบบนเครื่อง (http/localhost) ไม่ใช้ service worker และถอนตัวที่เคยติดตั้งไว้ออก
+         เพราะ SW เก็บไอคอนแบบ cache-first — แก้ไฟล์แล้วเบราว์เซอร์จะยังเห็นของเก่า */
+      navigator.serviceWorker.getRegistrations().then(function(rs){
+        rs.forEach(function(r){ r.unregister(); });
+      }).catch(function(){});
+      if(window.caches && caches.keys){
+        caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }).catch(function(){});
+      }
+    }
   }
 
   renderChips(); renderGrid(); tick(); setInterval(tick, 1000);
