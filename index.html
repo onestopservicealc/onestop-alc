@@ -13,7 +13,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdn.lordicon.com/lordicon.js" defer></script>
 <style>
   :root{
     --paper:#f4f5f8;
@@ -173,17 +172,10 @@
 
   .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
   .icon{position:relative;width:clamp(58px,15vw,68px);height:clamp(58px,15vw,68px);flex:none}
+  .icon picture{display:block;width:100%;height:100%}
   .icon img{width:100%;height:100%;object-fit:contain;display:block}
-  .icon lord-icon{width:100%;height:100%;display:block}
-  /* ไอคอนขยับเฉพาะตอนชี้/โฟกัสที่การ์ด (ไม่ขยับตลอดเวลา) */
-  .card:hover .icon img,
-  .card:focus-visible .icon img{will-change:transform;animation:iconBob 5.2s ease-in-out infinite}
-  @keyframes iconBob{
-    0%,100%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}
-    22%{transform:translate3d(0,-4px,0) rotate(-3.5deg) scale(1.03)}
-    55%{transform:translate3d(0,2.5px,0) rotate(2.5deg) scale(.985)}
-    78%{transform:translate3d(0,-1px,0) rotate(-1deg) scale(1.01)}
-  }
+  /* ไอคอนเป็นไฟล์ GIF ขยับเองวนไม่หยุด — ไม่ใช้ CSS animation แล้ว
+     ผู้ใช้ที่ตั้งค่า "ลดการเคลื่อนไหว" จะได้ภาพนิ่ง .png อัตโนมัติผ่าน <picture> */
 
   .tags{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
   .cat-tag{font-size:11.5px;font-weight:600;letter-spacing:.5px;color:var(--red);
@@ -231,6 +223,7 @@
   .viewer-bar{display:flex;align-items:center;gap:12px;
     padding:calc(env(safe-area-inset-top) + 12px) 14px 12px;border-bottom:1px solid var(--line)}
   .viewer-bar .vi{width:42px;height:42px;flex:none;display:grid;place-items:center}
+  .viewer-bar .vi picture{display:block;width:100%;height:100%}
   .viewer-bar .vi img{width:100%;height:100%;object-fit:contain;display:block}
   .viewer-bar .vt{line-height:1.25;min-width:0;flex:1}
   .viewer-bar .vt b{display:block;font-family:'Kanit',sans-serif;font-weight:600;font-size:16px;
@@ -252,6 +245,8 @@
   @keyframes reveal{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
   .reveal{animation:reveal .75s cubic-bezier(.2,.7,.3,1) both}
 
+  /* หมายเหตุ: บล็อกนี้คุมได้แค่ animation/transition ของ CSS (blob, cardIn, ping, reveal, sheetUp)
+     หยุด GIF ไม่ได้ — ไอคอน GIF สลับเป็นภาพนิ่งด้วย <picture media="prefers-reduced-motion"> ใน JS */
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.05s!important}
   }
@@ -348,11 +343,14 @@
   var SHOW_CLOCK   = true;
   var SHOW_INSTALL = true;
 
-  /* ไอคอนดึงจาก Lordicon (ไฟล์ SVG นิ่ง แล้วขยับด้วย CSS เฉพาะตอนชี้ที่การ์ด)
-     ค่า icon คือชื่อไฟล์บน media.lordicon.com/icons/wired/lineal/
-     ถ้าต้องการไอคอนขยับจริงแบบ 60fps ให้ใส่ lottie:"https://cdn.lordicon.com/xxxxxxxx.json" เพิ่ม
-     (จะเล่นตอน hover เช่นกัน) วิธีเอาลิงก์: เปิดไอคอนบน lordicon.com -> "Embed HTML" -> คัดลอกค่า src */
-  var LI = "https://media.lordicon.com/icons/wired/lineal/";
+  /* ไอคอนการ์ดระบบ: GIF ขยับเองวนไม่หยุด เก็บในเครื่อง (ใช้ออฟไลน์ได้)
+     - ค่า icon คือชื่อไฟล์ (ไม่ใส่นามสกุล) ต้องมีทั้ง icons/sys/<icon>.gif และ .png
+       .gif = ภาพขยับ | .png = ภาพนิ่ง (เบราว์เซอร์เลือกเองเมื่อผู้ใช้ตั้ง "ลดการเคลื่อนไหว")
+     - เพิ่ม/เปลี่ยนไอคอน: ใส่ชื่อจาก lordicon.com หมวด wired/lineal แล้วรัน
+           bash tools/build-icons.sh
+       แล้ว "เปลี่ยนเลข CACHE ใน sw.js" ไม่งั้นเครื่องที่เคยเปิดจะยังเห็นไอคอนเดิม */
+  var ICON_DIR = "./icons/sys/";
+  var ICON_PX  = 136;   /* ขนาดจริงของไฟล์ */
 
   /* =========================================================
      ★★★ แก้ไขรายการระบบทั้งหมดได้ที่นี่ (จัดการจากโค้ดเท่านั้น) ★★★
@@ -371,6 +369,8 @@
     {name:"บัญชีรายการวัสดุคอมพิวเตอร์", url:"http://10.100.31.31/wadsadu-com/", desc:"บัญชีรายการวัสดุคอมพิวเตอร์คงเหลือและการเบิกจ่าย", cat:"ครุภัณฑ์", icon:"2450-invoice-general", internal:true},
     {name:"ระบบขอสนับสนุนสื่อประชาสัมพันธ์", url:"https://media-alc.vercel.app", desc:"ขอสนับสนุนสื่อประชาสัมพันธ์ (กำลังพัฒนา)", cat:"ทั่วไป", icon:"2873-megaphone", embed:true}
     /* ↓ เพิ่มระบบใหม่ต่อจากบรรทัดนี้ได้เลย (อย่าลืมใส่ , ปิดท้ายบรรทัดก่อนหน้า)
+       แล้วรัน bash tools/build-icons.sh เพื่อสร้างไฟล์ไอคอน
+       (ค่า icon ในบรรทัดตัวอย่างต้องเป็นชื่อไอคอนที่มีจริง เพราะสคริปต์อ่านบรรทัดนี้ด้วย)
     ,{name:"ชื่อระบบใหม่", url:"https://example.com", desc:"คำอธิบาย", cat:"หมวดหมู่", icon:"28-calendar", embed:true}
     */
   ];
@@ -385,7 +385,11 @@
   var chipsEl = document.getElementById("chips");
 
   function esc(t){ var d=document.createElement("div"); d.textContent = t==null?"":t; return d.innerHTML; }
-  function iconUrl(s){ return LI + s.icon + ".svg"; }
+  function iconSrc(s, ext){
+    var n = s && s.icon;
+    if(typeof n !== "string" || !/^[a-z0-9-]+$/i.test(n)) return "";  /* กันชื่อแปลก/path traversal */
+    return ICON_DIR + n + ext;
+  }
   function isEmbed(s){ return !!s.embed && OPEN_MODE !== "newtab"; }
 
   /* ---------- filter chips ---------- */
@@ -414,53 +418,73 @@
     return okCat && okQ;
   }
   function iconMarkup(s){
-    if(s.lottie){
-      return '<lord-icon src="' + esc(s.lottie) + '" trigger="loop-on-hover" delay="0" stroke="regular"' +
-             ' colors="primary:#16161c,secondary:#e8112d"></lord-icon>';
-    }
-    return '<img src="' + esc(iconUrl(s)) + '" alt="" width="52" height="52" loading="lazy" decoding="async">';
+    var gif = iconSrc(s, ".gif");
+    if(!gif) return "";
+    return '<picture>' +
+             '<source media="(prefers-reduced-motion: reduce)" srcset="' + esc(iconSrc(s, ".png")) + '">' +
+             '<img src="' + esc(gif) + '" alt="" width="' + ICON_PX + '" height="' + ICON_PX +
+             '" loading="eager" decoding="async">' +
+           '</picture>';
   }
-  function renderGrid(){
-    grid.innerHTML = "";
-    document.getElementById("count").textContent = String(SYSTEMS.length).padStart(2,"0");
+  var cards   = null;   /* <a class="card"> 1 ใบต่อ 1 ระบบ — สร้างครั้งเดียวตลอดอายุหน้า */
+  var emptyEl = null;
 
-    var list = SYSTEMS.filter(matches);
-    if(list.length === 0){
-      var e = document.createElement("div");
-      e.className = "empty";
-      e.innerHTML = "<b>ไม่พบระบบที่ตรงกับการค้นหา</b>ลองเปลี่ยนคำค้นหรือเลือกหมวดหมู่อื่น";
-      grid.appendChild(e);
-      return;
-    }
-
-    list.forEach(function(s, i){
-      var embed = isEmbed(s);
-      var a = document.createElement("a");
-      a.className = "card";
-      a.href = s.url || "#";
-      a.style.animationDelay = (0.045 * i).toFixed(3) + "s";
-      if(!embed && s.url && s.url !== "#"){ a.target = "_blank"; a.rel = "noopener"; }
-      a.innerHTML =
-        '<div class="card-top">' +
-          '<div class="icon">' + iconMarkup(s) + '</div>' +
-          '<div class="tags">' +
-            (s.cat ? '<span class="cat-tag">' + esc(s.cat) + '</span>' : '') +
-            (s.internal ? '<span class="internal"><i></i>เครือข่ายภายใน</span>' : '') +
-          '</div>' +
+  function buildCard(s, i){
+    var embed = isEmbed(s);
+    var a = document.createElement("a");
+    a.className = "card";
+    a.href = s.url || "#";
+    a.style.animationDelay = (0.045 * i).toFixed(3) + "s";
+    if(!embed && s.url && s.url !== "#"){ a.target = "_blank"; a.rel = "noopener"; }
+    a.innerHTML =
+      '<div class="card-top">' +
+        '<div class="icon">' + iconMarkup(s) + '</div>' +
+        '<div class="tags">' +
+          (s.cat ? '<span class="cat-tag">' + esc(s.cat) + '</span>' : '') +
+          (s.internal ? '<span class="internal"><i></i>เครือข่ายภายใน</span>' : '') +
         '</div>' +
-        '<h3>' + esc(s.name) + '</h3>' +
-        '<p>' + esc(s.desc || "") + '</p>' +
-        '<div class="card-foot">' +
-          '<span class="open-label">' + (embed ? "เปิดในหน้านี้" : "เปิดแท็บใหม่") + '</span>' +
-          '<span class="go">เข้าระบบ <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
-        '</div>';
-      if(!s.url || s.url === "#"){
-        a.onclick = function(ev){ ev.preventDefault(); };
-      } else if(embed){
-        a.onclick = function(ev){ ev.preventDefault(); openViewer(s); };
-      }
+      '</div>' +
+      '<h3>' + esc(s.name) + '</h3>' +
+      '<p>' + esc(s.desc || "") + '</p>' +
+      '<div class="card-foot">' +
+        '<span class="open-label">' + (embed ? "เปิดในหน้านี้" : "เปิดแท็บใหม่") + '</span>' +
+        '<span class="go">เข้าระบบ <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+      '</div>';
+    if(!s.url || s.url === "#"){
+      a.onclick = function(ev){ ev.preventDefault(); };
+    } else if(embed){
+      a.onclick = function(ev){ ev.preventDefault(); openViewer(s); };
+    }
+    return a;
+  }
+
+  /* สร้างการ์ดครั้งเดียว ห้ามสร้างใหม่ตอนค้นหา/กดหมวด
+     ไม่งั้น <img> ถูกสร้างใหม่ = GIF เด้งกลับไปเริ่มเฟรมแรกทุกครั้งที่พิมพ์ */
+  function mountGrid(){
+    grid.innerHTML = "";
+    cards = SYSTEMS.map(function(s, i){
+      var a = buildCard(s, i);
       grid.appendChild(a);
+      return a;
     });
+    emptyEl = document.createElement("div");
+    emptyEl.className = "empty";
+    emptyEl.innerHTML = "<b>ไม่พบระบบที่ตรงกับการค้นหา</b>ลองเปลี่ยนคำค้นหรือเลือกหมวดหมู่อื่น";
+    emptyEl.hidden = true;
+    grid.appendChild(emptyEl);
+    document.getElementById("count").textContent = String(SYSTEMS.length).padStart(2,"0");
+  }
+
+  /* ค้นหา/กรอง = ซ่อน-แสดงการ์ดเดิมเท่านั้น (ไม่แตะ DOM ของไอคอน) */
+  function renderGrid(){
+    if(!cards) mountGrid();
+    var shown = 0;
+    for(var i = 0; i < cards.length; i++){
+      var ok = matches(SYSTEMS[i]);
+      cards[i].hidden = !ok;
+      if(ok) shown++;
+    }
+    emptyEl.hidden = shown > 0;
   }
 
   document.getElementById("search").addEventListener("input", function(e){
@@ -486,7 +510,7 @@
   function openViewer(s){
     document.getElementById("vName").textContent = s.name;
     document.getElementById("vUrl").textContent  = s.url;
-    document.getElementById("vIcon").innerHTML   = '<img src="' + esc(iconUrl(s)) + '" alt="" width="34" height="34">';
+    document.getElementById("vIcon").innerHTML   = iconMarkup(s);
     document.getElementById("vOpen").href = s.url;
     vLoad.style.display = "grid";
     vFrame.src = s.url;
@@ -523,7 +547,8 @@
   });
   document.getElementById("installNo").addEventListener("click", function(){ installEl.hidden = true; });
 
-  if("serviceWorker" in navigator && location.protocol === "https:"){
+  if("serviceWorker" in navigator &&
+     (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")){
     navigator.serviceWorker.register("./sw.js").catch(function(){});
   }
 
