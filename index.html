@@ -172,10 +172,9 @@
 
   .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
   .icon{position:relative;width:clamp(58px,15vw,68px);height:clamp(58px,15vw,68px);flex:none}
-  .icon picture{display:block;width:100%;height:100%}
   .icon img{width:100%;height:100%;object-fit:contain;display:block}
   /* ไอคอนเป็นไฟล์ GIF ขยับเองวนไม่หยุด — ไม่ใช้ CSS animation แล้ว
-     ผู้ใช้ที่ตั้งค่า "ลดการเคลื่อนไหว" จะได้ภาพนิ่ง .png อัตโนมัติผ่าน <picture> */
+     และขยับทุกเครื่องเสมอ ไม่สนค่า "ลดการเคลื่อนไหว" ของระบบ (ตั้งใจ) */
 
   .tags{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
   .cat-tag{font-size:11.5px;font-weight:600;letter-spacing:.5px;color:var(--red);
@@ -223,7 +222,6 @@
   .viewer-bar{display:flex;align-items:center;gap:12px;
     padding:calc(env(safe-area-inset-top) + 12px) 14px 12px;border-bottom:1px solid var(--line)}
   .viewer-bar .vi{width:42px;height:42px;flex:none;display:grid;place-items:center}
-  .viewer-bar .vi picture{display:block;width:100%;height:100%}
   .viewer-bar .vi img{width:100%;height:100%;object-fit:contain;display:block}
   .viewer-bar .vt{line-height:1.25;min-width:0;flex:1}
   .viewer-bar .vt b{display:block;font-family:'Kanit',sans-serif;font-weight:600;font-size:16px;
@@ -246,7 +244,7 @@
   .reveal{animation:reveal .75s cubic-bezier(.2,.7,.3,1) both}
 
   /* หมายเหตุ: บล็อกนี้คุมได้แค่ animation/transition ของ CSS (blob, cardIn, ping, reveal, sheetUp)
-     หยุด GIF ไม่ได้ — ไอคอน GIF สลับเป็นภาพนิ่งด้วย <picture media="prefers-reduced-motion"> ใน JS */
+     ไอคอน GIF ไม่ถูกหยุดด้วยค่านี้ — ตั้งใจให้ขยับทุกเครื่อง */
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.05s!important}
   }
@@ -344,8 +342,8 @@
   var SHOW_INSTALL = true;
 
   /* ไอคอนการ์ดระบบ: GIF ขยับเองวนไม่หยุด เก็บในเครื่อง (ใช้ออฟไลน์ได้)
-     - ค่า icon คือชื่อไฟล์ (ไม่ใส่นามสกุล) ต้องมีทั้ง icons/sys/<icon>.gif และ .png
-       .gif = ภาพขยับ | .png = ภาพนิ่ง (เบราว์เซอร์เลือกเองเมื่อผู้ใช้ตั้ง "ลดการเคลื่อนไหว")
+     - ค่า icon คือชื่อไฟล์ (ไม่ใส่นามสกุล) ต้องมีไฟล์ icons/sys/<icon>.gif
+     - ขยับทุกเครื่องเสมอ แม้ผู้ใช้เปิด "ลดการเคลื่อนไหว" ในระบบ (ตั้งใจ)
      - เพิ่ม/เปลี่ยนไอคอน: ใส่ชื่อจาก lordicon.com หมวด wired/lineal แล้วรัน
            bash tools/build-icons.sh
        แล้ว "เปลี่ยนเลข CACHE ใน sw.js" ไม่งั้นเครื่องที่เคยเปิดจะยังเห็นไอคอนเดิม */
@@ -420,11 +418,8 @@
   function iconMarkup(s){
     var gif = iconSrc(s, ".gif");
     if(!gif) return "";
-    return '<picture>' +
-             '<source media="(prefers-reduced-motion: reduce)" srcset="' + esc(iconSrc(s, ".png")) + '">' +
-             '<img src="' + esc(gif) + '" alt="" width="' + ICON_PX + '" height="' + ICON_PX +
-             '" loading="eager" decoding="async">' +
-           '</picture>';
+    return '<img src="' + esc(gif) + '" alt="" width="' + ICON_PX + '" height="' + ICON_PX +
+           '" loading="eager" decoding="async">';
   }
   var cards   = null;   /* <a class="card"> 1 ใบต่อ 1 ระบบ — สร้างครั้งเดียวตลอดอายุหน้า */
   var emptyEl = null;
