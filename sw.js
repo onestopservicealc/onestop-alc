@@ -3,7 +3,7 @@
    ★ เปลี่ยนเลข CACHE ทุกครั้งที่แก้ไฟล์ในลิสต์ หรือเพิ่ม/เปลี่ยนไอคอน
      (ไอคอนใช้แบบ cache-first ถ้าไม่เปลี่ยนเลข เครื่องเดิมจะยังเห็นไฟล์เก่า)
    ----------------------------------------------------------------- */
-const CACHE = 'alc-hub-v4';
+const CACHE = 'alc-hub-v5';
 
 const SHELL = [
   './', './manifest.json',
@@ -12,6 +12,7 @@ const SHELL = [
 
 /* ไอคอนการ์ดระบบ — สร้างด้วย  bash tools/build-icons.sh  (สคริปต์พิมพ์บล็อกนี้ให้คัดลอก) */
 const ICONS = [
+  './icons/sys/1310-nas-server.gif',
   './icons/sys/229-arrow-exchange.gif',
   './icons/sys/2450-invoice-general.gif',
   './icons/sys/28-calendar.gif',
