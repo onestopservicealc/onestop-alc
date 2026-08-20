@@ -61,6 +61,58 @@
   @keyframes float1{50%{transform:translate(-60px,50px) scale(1.12)}}
   @keyframes float2{50%{transform:translate(70px,-50px) scale(1.1)}}
 
+  /* ---------- พื้นหลังขยับเบา ๆ (CSS ล้วน ไม่มี JS ไม่มีไลบรารี) ----------
+     ทุกชิ้นใช้ transform/opacity เท่านั้น = การ์ดจอวาดให้ ไม่กิน CPU
+     และหยุดเองถ้าเครื่องตั้ง "ลดการเคลื่อนไหว" (บล็อกท้ายไฟล์) */
+  .bg{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+
+  /* ตารางจุดไหลเฉียงช้า ๆ — วนไร้รอยต่อเพราะระยะเลื่อน = ขนาดกระเบื้องพอดี (26px) */
+  .bg .dots{
+    position:absolute;inset:-40px;
+    background-image:radial-gradient(rgba(22,22,28,.11) 1.15px,transparent 1.15px);
+    background-size:26px 26px;
+    -webkit-mask-image:radial-gradient(115% 95% at 50% 35%,#000 35%,transparent 82%);
+            mask-image:radial-gradient(115% 95% at 50% 35%,#000 35%,transparent 82%);
+    animation:drift 18s linear infinite;
+    will-change:transform;
+  }
+  @keyframes drift{to{transform:translate3d(-26px,-26px,0)}}
+
+  /* ฝุ่นลอยขึ้นจากขอบล่าง จางหัว-จางท้าย */
+  .bg .dust{
+    position:absolute;bottom:-14px;width:7px;height:7px;border-radius:50%;
+    background:var(--red-soft);opacity:0;
+    animation:rise linear infinite;will-change:transform,opacity;
+  }
+  @keyframes rise{
+    0%{transform:translate3d(0,0,0) scale(.7);opacity:0}
+    12%{opacity:.42}
+    70%{opacity:.28}
+    100%{transform:translate3d(26px,-88vh,0) scale(1.05);opacity:0}
+  }
+  /* animation-delay ติดลบ = เม็ดกระจายกันตั้งแต่วินาทีแรก ไม่ลอยพร้อมกันเป็นแถว
+     คาบเวลาเลขไม่ลงตัวกัน (22..41) = ไม่มาบรรจบเป็นจังหวะซ้ำให้จับได้ */
+  .bg .d1 {left:4%;  animation-duration:26s;animation-delay:-2s}
+  .bg .d2 {left:10%; animation-duration:34s;animation-delay:-11s;width:5px;height:5px;background:#8fa4ff}
+  .bg .d3 {left:16%; animation-duration:29s;animation-delay:-19s;width:6px;height:6px}
+  .bg .d4 {left:22%; animation-duration:38s;animation-delay:-6s;width:9px;height:9px}
+  .bg .d5 {left:28%; animation-duration:31s;animation-delay:-24s;width:5px;height:5px;background:#8fa4ff}
+  .bg .d6 {left:34%; animation-duration:24s;animation-delay:-14s}
+  .bg .d7 {left:39%; animation-duration:36s;animation-delay:-30s;width:8px;height:8px;background:#8fa4ff}
+  .bg .d8 {left:45%; animation-duration:27s;animation-delay:-4s;width:6px;height:6px}
+  .bg .d9 {left:51%; animation-duration:41s;animation-delay:-17s;width:10px;height:10px}
+  .bg .d10{left:57%; animation-duration:23s;animation-delay:-9s;width:5px;height:5px}
+  .bg .d11{left:63%; animation-duration:33s;animation-delay:-27s;width:7px;height:7px;background:#8fa4ff}
+  .bg .d12{left:69%; animation-duration:28s;animation-delay:-21s;width:6px;height:6px}
+  .bg .d13{left:75%; animation-duration:39s;animation-delay:-12s;width:9px;height:9px}
+  .bg .d14{left:81%; animation-duration:22s;animation-delay:-33s;width:5px;height:5px;background:#8fa4ff}
+  .bg .d15{left:87%; animation-duration:35s;animation-delay:-7s;width:7px;height:7px}
+  .bg .d16{left:93%; animation-duration:30s;animation-delay:-25s;width:6px;height:6px}
+  /* จอเล็ก = เหลือ 10 เม็ด ไม่ให้แบตหมดเร็วและไม่รกจอแคบ */
+  @media (max-width:640px){
+    .bg .d2,.bg .d5,.bg .d8,.bg .d11,.bg .d14,.bg .d16{display:none}
+  }
+
   .shell{
     position:relative;z-index:2;max-width:1240px;margin:0 auto;
     padding:0 var(--gutter) calc(clamp(40px,12vw,80px) + env(safe-area-inset-bottom));
@@ -158,17 +210,36 @@
 
   /* ---------- grid ---------- */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,304px),1fr));gap:clamp(12px,2.6vw,20px)}
-  .card{
-    position:relative;background:var(--white);border-radius:var(--r-card);
-    padding:clamp(18px,4vw,24px);cursor:pointer;text-decoration:none;color:inherit;
-    display:flex;flex-direction:column;gap:12px;overflow:hidden;
-    box-shadow:var(--shadow-sm);
-    transition:transform .3s cubic-bezier(.2,.7,.3,1),box-shadow .3s;
+  /* กล่องครอบการ์ด — ปุ่มดาวต้องอยู่นอก <a> (ห้ามซ้อนปุ่มไว้ในลิงก์)
+     และกล่องนี้เป็นตัวรับ order เพื่อดันระบบที่ติดดาวขึ้นไปอยู่ด้านบน */
+  .cw{
+    position:relative;display:flex;
+    transition:transform .3s cubic-bezier(.2,.7,.3,1);
     animation:cardIn .55s cubic-bezier(.2,.7,.3,1) both;
   }
-  .card:hover{transform:translateY(-6px);box-shadow:var(--shadow-md)}
-  .card:active{transform:scale(.985)}
+  .cw:hover{transform:translateY(-6px)}
+  .cw:active{transform:scale(.985)}
+  .cw:hover .card{box-shadow:var(--shadow-md)}
+  .card{
+    position:relative;width:100%;background:var(--white);border-radius:var(--r-card);
+    padding:clamp(18px,4vw,24px);cursor:pointer;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;gap:12px;overflow:hidden;
+    box-shadow:var(--shadow-sm);transition:box-shadow .3s;
+  }
   @keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+  /* ---------- ปุ่มติดดาว "ใช้บ่อย" ---------- */
+  .fav{
+    position:absolute;top:clamp(14px,3vw,18px);right:clamp(14px,3vw,18px);z-index:3;
+    width:34px;height:34px;flex:none;display:grid;place-items:center;padding:0;border:none;
+    cursor:pointer;border-radius:50%;background:var(--paper);color:var(--muted);
+    transition:background .2s,color .2s,transform .2s;
+  }
+  .fav:hover{background:var(--red-wash);color:var(--red);transform:scale(1.1)}
+  .fav svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.9;fill:none}
+  .fav.on{background:#fff4d6;color:#e0a100}
+  .fav.on svg{fill:currentColor;stroke-width:1.4}
+  .fav.on:hover{background:#ffe6a3;color:#c98a00}
 
   .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
   .icon{position:relative;width:clamp(58px,15vw,68px);height:clamp(58px,15vw,68px);flex:none}
@@ -176,7 +247,8 @@
   /* ไอคอนเป็นไฟล์ GIF ขยับเองวนไม่หยุด — ไม่ใช้ CSS animation แล้ว
      และขยับทุกเครื่องเสมอ ไม่สนค่า "ลดการเคลื่อนไหว" ของระบบ (ตั้งใจ) */
 
-  .tags{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  /* เว้นที่ให้ปุ่มดาวมุมขวาบน ป้ายหมวดจะไม่ลอดใต้ปุ่ม */
+  .tags{display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding-right:34px}
   .cat-tag{font-size:11.5px;font-weight:600;letter-spacing:.5px;color:var(--red);
     background:var(--red-wash);padding:6px 13px;border-radius:var(--r-pill);white-space:nowrap}
   .internal{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;
@@ -254,6 +326,27 @@
   <div class="blob a"></div>
   <div class="blob b"></div>
   <div class="blob c"></div>
+
+  <!-- พื้นหลังขยับเบา ๆ: ตารางจุดไหลเฉียง + ฝุ่นลอยขึ้น (ตกแต่งล้วน) -->
+  <div class="bg" aria-hidden="true">
+    <span class="dots"></span>
+    <span class="dust d1"></span>
+    <span class="dust d2"></span>
+    <span class="dust d3"></span>
+    <span class="dust d4"></span>
+    <span class="dust d5"></span>
+    <span class="dust d6"></span>
+    <span class="dust d7"></span>
+    <span class="dust d8"></span>
+    <span class="dust d9"></span>
+    <span class="dust d10"></span>
+    <span class="dust d11"></span>
+    <span class="dust d12"></span>
+    <span class="dust d13"></span>
+    <span class="dust d14"></span>
+    <span class="dust d15"></span>
+    <span class="dust d16"></span>
+  </div>
 
   <div class="shell">
     <!-- STICKY TOP: bar + chips -->
@@ -366,7 +459,8 @@
     {name:"ระบบยืม-คืนครุภัณฑ์", url:"http://10.100.31.31/eborrow/", desc:"ยืม-คืนครุภัณฑ์ และติดตามสถานะการยืม", cat:"ครุภัณฑ์", icon:"229-arrow-exchange", internal:true},
     {name:"บัญชีรายการวัสดุคอมพิวเตอร์", url:"http://10.100.31.31/wadsadu-com/", desc:"บัญชีรายการวัสดุคอมพิวเตอร์คงเหลือและการเบิกจ่าย", cat:"ครุภัณฑ์", icon:"2450-invoice-general", internal:true},
     {name:"ระบบขอสนับสนุนสื่อประชาสัมพันธ์", url:"https://media-alc.vercel.app", desc:"ขอสนับสนุนสื่อประชาสัมพันธ์ (กำลังพัฒนา)", cat:"ทั่วไป", icon:"2873-megaphone", embed:true},
-    {name:"NAS Datacenter", url:"http://10.100.31.34:1798/#/signin", desc:"พื้นที่จัดเก็บข้อมูลกลางของหน่วยงาน เข้าใช้งานผ่านบัญชีผู้ใช้", cat:"ศูนย์ข้อมูล", icon:"1310-nas-server", internal:true}
+    {name:"NAS Datacenter", url:"http://10.100.31.34:1798/#/signin", desc:"พื้นที่จัดเก็บข้อมูลกลางของหน่วยงาน เข้าใช้งานผ่านบัญชีผู้ใช้", cat:"ศูนย์ข้อมูล", icon:"1310-nas-server", internal:true},
+    {name:"ระบบรวมข่าวอุบัติเหตุเมาแล้วขับ", url:"https://new-peach-six-23.vercel.app/", desc:"รวมข่าวอุบัติเหตุจากการเมาแล้วขับจากสื่อต่าง ๆ", cat:"ข่าว", icon:"868-car-crash", embed:true}
     /* ↓ เพิ่มระบบใหม่ต่อจากบรรทัดนี้ได้เลย (อย่าลืมใส่ , ปิดท้ายบรรทัดก่อนหน้า)
        แล้วรัน bash tools/build-icons.sh เพื่อสร้างไฟล์ไอคอน
        (ค่า icon ในบรรทัดตัวอย่างต้องเป็นชื่อไอคอนที่มีจริง เพราะสคริปต์อ่านบรรทัดนี้ด้วย)
@@ -422,15 +516,62 @@
     return '<img src="' + esc(gif) + '" alt="" width="' + ICON_PX + '" height="' + ICON_PX +
            '" loading="eager" decoding="async">';
   }
-  var cards   = null;   /* <a class="card"> 1 ใบต่อ 1 ระบบ — สร้างครั้งเดียวตลอดอายุหน้า */
+  var cards   = null;   /* <div class="cw"> 1 ใบต่อ 1 ระบบ — สร้างครั้งเดียวตลอดอายุหน้า */
   var emptyEl = null;
+
+  /* =========================================================
+     ติดดาว "ระบบที่ใช้บ่อย" → เด้งขึ้นไปอยู่ด้านบนสุด
+     เก็บใน localStorage ของเบราว์เซอร์แต่ละคน ไม่ปนกันระหว่างผู้ใช้
+     และไม่ตามไปเครื่องอื่น (ถ้าต้องการให้ตามตัว ต้องมีระบบล็อกอิน+เซิร์ฟเวอร์)
+     ========================================================= */
+  var FAV_KEY = "alc-hub-fav";
+  var favs = (function(){
+    try{
+      var v = JSON.parse(localStorage.getItem(FAV_KEY) || "[]");
+      return Array.isArray(v) ? v.filter(function(x){ return typeof x === "string"; }) : [];
+    }catch(e){ return []; }        /* ค่าเสีย/อ่านไม่ได้ = เริ่มจากว่าง ไม่ให้หน้าพัง */
+  })();
+  function favId(s){ return s.url || s.name; }
+  function isFav(s){ return favs.indexOf(favId(s)) > -1; }
+  function saveFavs(){
+    try{ localStorage.setItem(FAV_KEY, JSON.stringify(favs)); }
+    catch(e){}                     /* โหมดส่วนตัว/พื้นที่เต็ม = ใช้ได้แค่รอบนี้ ไม่ต้องเตือน */
+  }
+
+  var STAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="m12 3.6 2.63 5.33 5.87.86-4.25 4.14 1 5.85L12 16.97l-5.25 2.77 1-5.85L3.5 9.79l5.87-.86z"' +
+    ' stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function paintFav(btn, s){
+    var on = isFav(s);
+    btn.classList.toggle("on", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    var t = on ? "เอาออกจากระบบที่ใช้บ่อย" : "ติดดาวเป็นระบบที่ใช้บ่อย";
+    btn.title = t;
+    btn.setAttribute("aria-label", t + ": " + s.name);
+  }
+  function toggleFav(s, btn){
+    var id = favId(s), k = favs.indexOf(id);
+    if(k > -1) favs.splice(k, 1); else favs.push(id);
+    saveFavs(); paintFav(btn, s); applyOrder();
+  }
+  /* ดันการ์ดที่ติดดาวขึ้นบนด้วย CSS order — ไม่ย้าย DOM
+     (ย้าย DOM = <img> ถูกแนบใหม่ GIF จะเด้งกลับไปเริ่มเฟรมแรก) */
+  function applyOrder(){
+    if(!cards) return;
+    for(var i = 0; i < cards.length; i++){
+      cards[i].style.order = isFav(SYSTEMS[i]) ? "-1" : "0";
+    }
+  }
 
   function buildCard(s, i){
     var embed = isEmbed(s);
+    var cw = document.createElement("div");
+    cw.className = "cw";
+    cw.style.animationDelay = (0.045 * i).toFixed(3) + "s";
     var a = document.createElement("a");
     a.className = "card";
     a.href = s.url || "#";
-    a.style.animationDelay = (0.045 * i).toFixed(3) + "s";
     if(!embed && s.url && s.url !== "#"){ a.target = "_blank"; a.rel = "noopener"; }
     a.innerHTML =
       '<div class="card-top">' +
@@ -451,7 +592,20 @@
     } else if(embed){
       a.onclick = function(ev){ ev.preventDefault(); openViewer(s); };
     }
-    return a;
+
+    var fav = document.createElement("button");
+    fav.type = "button";
+    fav.className = "fav";
+    fav.innerHTML = STAR_SVG;
+    paintFav(fav, s);
+    fav.onclick = function(ev){
+      ev.preventDefault(); ev.stopPropagation();   /* กดดาวแล้วต้องไม่เปิดระบบ */
+      toggleFav(s, fav);
+    };
+
+    cw.appendChild(a);
+    cw.appendChild(fav);
+    return cw;
   }
 
   /* สร้างการ์ดครั้งเดียว ห้ามสร้างใหม่ตอนค้นหา/กดหมวด
@@ -459,16 +613,18 @@
   function mountGrid(){
     grid.innerHTML = "";
     cards = SYSTEMS.map(function(s, i){
-      var a = buildCard(s, i);
-      grid.appendChild(a);
-      return a;
+      var cw = buildCard(s, i);
+      grid.appendChild(cw);
+      return cw;
     });
     emptyEl = document.createElement("div");
     emptyEl.className = "empty";
     emptyEl.innerHTML = "<b>ไม่พบระบบที่ตรงกับการค้นหา</b>ลองเปลี่ยนคำค้นหรือเลือกหมวดหมู่อื่น";
     emptyEl.hidden = true;
+    emptyEl.style.order = "1";     /* อยู่ท้ายสุดเสมอ ไม่ให้แทรกกลางการ์ดที่ติดดาว */
     grid.appendChild(emptyEl);
     document.getElementById("count").textContent = String(SYSTEMS.length).padStart(2,"0");
+    applyOrder();
   }
 
   /* ค้นหา/กรอง = ซ่อน-แสดงการ์ดเดิมเท่านั้น (ไม่แตะ DOM ของไอคอน) */
