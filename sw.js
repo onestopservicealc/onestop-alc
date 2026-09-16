@@ -14,6 +14,7 @@ const SHELL = [
 const ICONS = [
   './icons/sys/868-car-crash.gif',
   './icons/sys/2466-stamp-approved.gif',
+  './icons/sys/734-id-card.gif',
   './icons/sys/1310-nas-server.gif',
   './icons/sys/229-arrow-exchange.gif',
   './icons/sys/2450-invoice-general.gif',
