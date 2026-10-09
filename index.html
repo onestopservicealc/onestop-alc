@@ -173,6 +173,32 @@
   .dot{width:8px;height:8px;border-radius:50%;background:var(--red-soft);animation:ping 1.8s ease-out infinite}
   @keyframes ping{0%{box-shadow:0 0 0 0 rgba(255,59,82,.7)}70%{box-shadow:0 0 0 9px rgba(255,59,82,0)}100%{box-shadow:0 0 0 0 rgba(255,59,82,0)}}
 
+  /* ---------- network filter ---------- */
+  .network-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .network-option{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;
+    padding:8px 16px;border:1px solid var(--line);border-radius:var(--r-pill);
+    background:var(--white);color:var(--ink-soft);font:500 14px 'IBM Plex Sans Thai',sans-serif;
+    cursor:pointer;transition:background .2s,color .2s,border-color .2s;
+  }
+  .network-option:hover{border-color:var(--ink-soft)}
+  .network-option[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--white)}
+  .network-count{font-size:12px;font-variant-numeric:tabular-nums}
+  .network-option:focus-visible,.chip:focus-visible,.reset-filters:focus-visible{
+    outline:2px solid var(--red);outline-offset:3px;
+  }
+  .network-help,.results{font-size:13px;line-height:1.6;color:var(--ink-soft)}
+  .network-help{margin-top:8px}
+  .results{margin:4px 0 14px}
+  .reset-filters{display:block;margin:16px auto 0;min-height:44px;padding:8px 18px;
+    border:1px solid var(--ink-soft);border-radius:var(--r-pill);background:var(--white);
+    color:var(--ink);font:500 14px 'IBM Plex Sans Thai',sans-serif;cursor:pointer}
+  .reset-filters:hover{background:var(--paper)}
+  @media (max-width:480px){
+    .network-options{gap:6px}
+    .network-option{flex:1 1 auto;padding:8px 10px;font-size:13px;gap:6px}
+  }
+
   /* ---------- filter chips (horizontal scroll on mobile) ---------- */
   .chips{
     display:flex;gap:9px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
@@ -251,10 +277,10 @@
   .tags{display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding-right:34px}
   .cat-tag{font-size:11.5px;font-weight:600;letter-spacing:.5px;color:var(--red);
     background:var(--red-wash);padding:6px 13px;border-radius:var(--r-pill);white-space:nowrap}
-  .internal{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;
-    font-size:10px;letter-spacing:.6px;color:var(--ink-soft);background:var(--paper);
-    border:1px solid var(--line);padding:5px 11px;border-radius:var(--r-pill);white-space:nowrap}
-  .internal i{width:6px;height:6px;border-radius:50%;background:var(--muted);flex:none}
+  .network-tag{display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;color:var(--ink-soft);background:var(--paper);
+    padding:5px 9px;border-radius:var(--r-pill);white-space:nowrap}
+  .network-tag.external{color:#225a42;background:#eaf5ef}
 
   .card h3{font-family:'Kanit',sans-serif;font-weight:600;font-size:clamp(18px,4.6vw,20px);
     line-height:1.3;letter-spacing:.2px;text-wrap:pretty}
@@ -373,7 +399,9 @@
         </div>
       </header>
 
-      <div class="chips" id="chips"></div>
+      <div class="network-options" id="networks" role="group" aria-label="กรองตามเครือข่ายที่เข้าใช้งาน" aria-describedby="networkHelp"></div>
+      <p class="network-help" id="networkHelp">ระบบเครือข่ายภายในต้องเชื่อมต่อเครือข่ายของหน่วยงาน</p>
+      <div class="chips" id="chips" role="group" aria-label="กรองตามหมวดหมู่"></div>
     </div>
 
     <!-- PWA INSTALL BANNER -->
@@ -388,7 +416,8 @@
     </div>
 
     <!-- GRID -->
-    <main class="grid" id="grid"></main>
+    <p class="results" id="results" role="status" aria-live="polite" aria-atomic="true"></p>
+    <main class="grid" id="grid" aria-label="รายการระบบ"></main>
 
     <footer class="reveal" style="animation-delay:.2s">
       <span>© ศูนย์รวมระบบหน่วยงาน · จัดทำเพื่อการใช้งานภายใน</span>
@@ -449,8 +478,10 @@
      - แก้ไข: เปลี่ยนข้อความในบรรทัดที่ต้องการ
      - ลบ: ลบทั้งบรรทัดของระบบนั้นออก
      embed:true    = เปิดฝังในหน้านี้ | ไม่ใส่ = เปิดแท็บใหม่
-     internal:true = แสดงป้าย "เครือข่ายภายใน" (เข้าได้เฉพาะในเครือข่ายสำนักงาน
-                     และฝังในหน้านี้ไม่ได้เพราะเป็น http บนหน้า https)
+     internal:true = จัดอยู่ใน "เครือข่ายภายใน" ต้องเชื่อมต่อเครือข่ายสำนักงาน
+     internal:false หรือไม่ใส่ = จัดอยู่ใน "เข้าได้จากภายนอก"
+                     ระบุตามเครือข่ายที่เข้าได้ ไม่ใช่สิทธิ์หรือกลุ่มผู้ใช้งาน
+                     ระบบ http ภายในไม่ควรฝังบนหน้า https ให้เปิดแท็บใหม่
      ========================================================= */
   var SYSTEMS = [
     {name:"ปฏิทินสำนักงาน", url:"https://calendar-d.vercel.app/", desc:"ปฏิทินกิจกรรมและกำหนดการของสำนักงาน", cat:"ทั่วไป", icon:"28-calendar", embed:true},
@@ -472,6 +503,7 @@
 
   var MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 
+  var activeNetwork = "all";
   var activeCat = "ทั้งหมด";
   var query = "";
   var installEvent = null;
@@ -487,10 +519,45 @@
   }
   function isEmbed(s){ return !!s.embed && OPEN_MODE !== "newtab"; }
 
+  /* ใช้ internal เดียวกันทั้งตัวกรองและป้าย เพื่อให้ข้อมูลสอดคล้องกัน */
+  function networkOf(s){ return s.internal ? "internal" : "external"; }
+  function matchesNetwork(s){ return activeNetwork === "all" || networkOf(s) === activeNetwork; }
+  var NETWORKS = [
+    {id:"all", label:"ทั้งหมด", help:"ระบบเครือข่ายภายในต้องเชื่อมต่อเครือข่ายของหน่วยงาน"},
+    {id:"internal", label:"เครือข่ายภายใน", help:"ต้องเชื่อมต่อเครือข่ายของหน่วยงานเพื่อเข้าใช้งานระบบเหล่านี้"},
+    {id:"external", label:"เข้าได้จากภายนอก", help:"เข้าใช้งานผ่านอินเทอร์เน็ตได้ บางระบบอาจต้องเข้าสู่ระบบด้วยบัญชีผู้ใช้"}
+  ];
+  function updateNetworkSelection(){
+    var buttons = document.getElementById("networks").children;
+    NETWORKS.forEach(function(n, i){
+      buttons[i].setAttribute("aria-pressed", n.id === activeNetwork ? "true" : "false");
+      if(n.id === activeNetwork) document.getElementById("networkHelp").textContent = n.help;
+    });
+  }
+  function mountNetworks(){
+    var container = document.getElementById("networks");
+    NETWORKS.forEach(function(n){
+      var total = SYSTEMS.filter(function(s){ return n.id === "all" || networkOf(s) === n.id; }).length;
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "network-option";
+      b.setAttribute("aria-controls", "grid");
+      b.setAttribute("aria-label", n.label + " " + total + " ระบบ");
+      b.innerHTML = esc(n.label) + '<span class="network-count" aria-hidden="true">' + total + '</span>';
+      b.onclick = function(){
+        activeNetwork = n.id;
+        if(cats().indexOf(activeCat) < 0) activeCat = "ทั้งหมด";
+        updateNetworkSelection(); renderChips(); renderGrid();
+      };
+      container.appendChild(b);
+    });
+    updateNetworkSelection();
+  }
+
   /* ---------- filter chips ---------- */
   function cats(){
     var out = ["ทั้งหมด"];
-    SYSTEMS.forEach(function(s){ if(s.cat && out.indexOf(s.cat) < 0) out.push(s.cat); });
+    SYSTEMS.forEach(function(s){ if(matchesNetwork(s) && s.cat && out.indexOf(s.cat) < 0) out.push(s.cat); });
     return out;
   }
   function renderChips(){
@@ -499,8 +566,18 @@
       var b = document.createElement("button");
       b.type = "button";
       b.className = "chip" + (c === activeCat ? " on" : "");
+      b.setAttribute("aria-pressed", c === activeCat ? "true" : "false");
+      b.setAttribute("aria-controls", "grid");
       b.textContent = c;
-      b.onclick = function(){ activeCat = c; renderChips(); renderGrid(); };
+      b.onclick = function(){
+        activeCat = c;
+        Array.prototype.forEach.call(chipsEl.children, function(chip){
+          var selected = chip.textContent === activeCat;
+          chip.classList.toggle("on", selected);
+          chip.setAttribute("aria-pressed", selected ? "true" : "false");
+        });
+        renderGrid();
+      };
       chipsEl.appendChild(b);
     });
   }
@@ -510,7 +587,7 @@
     var okCat = activeCat === "ทั้งหมด" || s.cat === activeCat;
     var q = query.trim().toLowerCase();
     var okQ = !q || (s.name + " " + (s.desc||"") + " " + (s.cat||"")).toLowerCase().indexOf(q) > -1;
-    return okCat && okQ;
+    return matchesNetwork(s) && okCat && okQ;
   }
   function iconMarkup(s){
     var gif = iconSrc(s, ".gif");
@@ -580,7 +657,7 @@
         '<div class="icon">' + iconMarkup(s) + '</div>' +
         '<div class="tags">' +
           (s.cat ? '<span class="cat-tag">' + esc(s.cat) + '</span>' : '') +
-          (s.internal ? '<span class="internal"><i></i>เครือข่ายภายใน</span>' : '') +
+          '<span class="network-tag ' + networkOf(s) + '">' + (s.internal ? 'เครือข่ายภายใน' : 'เข้าได้จากภายนอก') + '</span>' +
         '</div>' +
       '</div>' +
       '<h3>' + esc(s.name) + '</h3>' +
@@ -621,7 +698,14 @@
     });
     emptyEl = document.createElement("div");
     emptyEl.className = "empty";
-    emptyEl.innerHTML = "<b>ไม่พบระบบที่ตรงกับการค้นหา</b>ลองเปลี่ยนคำค้นหรือเลือกหมวดหมู่อื่น";
+    emptyEl.innerHTML = '<b>ไม่พบระบบที่ตรงกับตัวกรอง</b>ลองเปลี่ยนคำค้น เครือข่าย หรือหมวดหมู่' +
+      '<button type="button" class="reset-filters">ล้างตัวกรองทั้งหมด</button>';
+    emptyEl.querySelector("button").onclick = function(){
+      activeNetwork = "all"; activeCat = "ทั้งหมด"; query = "";
+      document.getElementById("search").value = "";
+      updateNetworkSelection(); renderChips(); renderGrid();
+      document.getElementById("search").focus();
+    };
     emptyEl.hidden = true;
     emptyEl.style.order = "1";     /* อยู่ท้ายสุดเสมอ ไม่ให้แทรกกลางการ์ดที่ติดดาว */
     grid.appendChild(emptyEl);
@@ -639,6 +723,10 @@
       if(ok) shown++;
     }
     emptyEl.hidden = shown > 0;
+    var networkLabel = NETWORKS.filter(function(n){ return n.id === activeNetwork; })[0].label;
+    document.getElementById("results").textContent = "แสดง " + shown + " จาก " + SYSTEMS.length + " ระบบ" +
+      (activeNetwork !== "all" ? " · " + networkLabel : "") +
+      (activeCat !== "ทั้งหมด" ? " · " + activeCat : "");
   }
 
   document.getElementById("search").addEventListener("input", function(e){
@@ -716,7 +804,7 @@
     }
   }
 
-  renderChips(); renderGrid(); tick(); setInterval(tick, 1000);
+  mountNetworks(); renderChips(); renderGrid(); tick(); setInterval(tick, 1000);
 })();
 </script>
 </body>
