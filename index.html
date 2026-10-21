@@ -119,13 +119,34 @@
   }
 
   /* ---------- sticky top region (bar + chips) ---------- */
+  
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  margin:0 calc(-1 * var(--gutter));
+  padding:calc(env(safe-area-inset-top) + clamp(10px,2.5vw,22px)) var(--gutter) 12px;
+  background:rgba(244,245,248,.86);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  transform:translateY(0);
+  transition:transform .28s ease;
+  will-change:transform;
+}
+
+.topbar.is-hidden{
+  transform:translateY(-110%);
+  pointer-events:none;
+}
+
+@media (prefers-reduced-motion:reduce){
   .topbar{
-    position:sticky;top:0;z-index:20;
-    margin:0 calc(-1 * var(--gutter));
-    padding:calc(env(safe-area-inset-top) + clamp(10px,2.5vw,22px)) var(--gutter) 12px;
-    background:rgba(244,245,248,.86);
-    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    transition:none;
   }
+}
+
+
 
   header.bar{
     display:flex;align-items:center;gap:clamp(10px,2vw,20px);flex-wrap:wrap;
@@ -550,6 +571,33 @@
     });
     updateNetworkSelection();
   }
+
+  // ซ่อนแถบด้านบนเมื่อเลื่อนลง และแสดงเมื่อเลื่อนขึ้น
+  var topbar = document.querySelector(".topbar");
+  var lastScrollY = window.scrollY;
+  var scrollTicking = false;
+  var scrollThreshold = 8;
+
+  window.addEventListener("scroll", function(){
+    if(scrollTicking) return;
+    scrollTicking = true;
+
+    window.requestAnimationFrame(function(){
+      var currentY = window.scrollY;
+      var delta = currentY - lastScrollY;
+
+      if(currentY <= 20){
+        topbar.classList.remove("is-hidden");
+      } else if(delta > scrollThreshold){
+        topbar.classList.add("is-hidden");
+      } else if(delta < -scrollThreshold){
+        topbar.classList.remove("is-hidden");
+      }
+
+      lastScrollY = currentY;
+      scrollTicking = false;
+    });
+  }, {passive:true});
 
   /* ---------- filter chips ---------- */
   function cats(){
